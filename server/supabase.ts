@@ -2,6 +2,8 @@ import { JournalPost } from "./supabase-types";
 
 type JournalInput = Omit<JournalPost, "id" | "updated_at"> & { updated_at?: string };
 type SupabaseError = { message?: string; hint?: string; details?: string };
+export type CommissionEnquiry = { id: number; created_at: string; name: string; email: string; project_type: string; room: string | null; size: string | null; budget: string | null; timeline: string | null; message: string; status: string };
+export type CommissionEnquiryInput = Omit<CommissionEnquiry, "id" | "created_at" | "status">;
 
 function getConfig() {
   const url = process.env.SUPABASE_URL;
@@ -33,32 +35,18 @@ async function supabaseRequest<T>(path: string, init: RequestInit = {}, protecte
   return (text ? JSON.parse(text) : []) as T;
 }
 
-export async function listPublishedJournalPosts() {
-  return supabaseRequest<JournalPost[]>("journal_posts?is_published=eq.true&order=published_at.desc");
-}
+export async function listPublishedJournalPosts() { return supabaseRequest<JournalPost[]>("journal_posts?is_published=eq.true&order=published_at.desc"); }
+export async function getJournalPostBySlug(slug: string) { const rows = await supabaseRequest<JournalPost[]>(`journal_posts?slug=eq.${encodeURIComponent(slug)}&is_published=eq.true&limit=1`); return rows[0] ?? null; }
+export async function listAdminJournalPosts() { return supabaseRequest<JournalPost[]>("journal_posts?order=published_at.desc", {}, true); }
+export async function createJournalPost(input: JournalInput) { const rows = await supabaseRequest<JournalPost[]>("journal_posts", { method: "POST", body: JSON.stringify(input) }, true); return rows[0]; }
+export async function updateJournalPost(id: number, input: Partial<JournalInput>) { const rows = await supabaseRequest<JournalPost[]>(`journal_posts?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ ...input, updated_at: new Date().toISOString() }) }, true); return rows[0]; }
+export async function deleteJournalPost(id: number) { await supabaseRequest<JournalPost[]>(`journal_posts?id=eq.${id}`, { method: "DELETE" }, true); return id; }
 
-export async function getJournalPostBySlug(slug: string) {
-  const rows = await supabaseRequest<JournalPost[]>(`journal_posts?slug=eq.${encodeURIComponent(slug)}&is_published=eq.true&limit=1`);
-  return rows[0] ?? null;
-}
-
-export async function listAdminJournalPosts() {
-  return supabaseRequest<JournalPost[]>("journal_posts?order=published_at.desc", {}, true);
-}
-
-export async function createJournalPost(input: JournalInput) {
-  const rows = await supabaseRequest<JournalPost[]>("journal_posts", { method: "POST", body: JSON.stringify(input) }, true);
+export async function createCommissionEnquiry(input: CommissionEnquiryInput) {
+  const rows = await supabaseRequest<CommissionEnquiry[]>("commission_enquiries", { method: "POST", body: JSON.stringify(input) }, true);
   return rows[0];
 }
-
-export async function updateJournalPost(id: number, input: Partial<JournalInput>) {
-  const rows = await supabaseRequest<JournalPost[]>(`journal_posts?id=eq.${id}`, { method: "PATCH", body: JSON.stringify({ ...input, updated_at: new Date().toISOString() }) }, true);
-  return rows[0];
-}
-
-export async function deleteJournalPost(id: number) {
-  await supabaseRequest<JournalPost[]>(`journal_posts?id=eq.${id}`, { method: "DELETE" }, true);
-  return id;
-}
+export async function listCommissionEnquiries() { return supabaseRequest<CommissionEnquiry[]>("commission_enquiries?order=created_at.desc", {}, true); }
+export async function deleteCommissionEnquiry(id: number) { await supabaseRequest<CommissionEnquiry[]>(`commission_enquiries?id=eq.${id}`, { method: "DELETE" }, true); return id; }
 
 export { getConfig as getSupabaseConfig };

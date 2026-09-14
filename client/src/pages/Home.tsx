@@ -145,7 +145,7 @@ export default function Home() {
       <WhatsAppFloat />
       <header className="app-header">
         <a className="studio-logo" href="#home" onClick={() => scrollTo("home")}><span className="logo-mark"><CircleDot size={17} /></span><span><b>Threaded Forms</b><small>Tehila's studio</small></span></a>
-        <nav className={`app-nav ${menuOpen ? "open" : ""}`}>{[["home", "Home"], ["story", "Story"], ["shop", "Shop"], ["events", "Events"], ["journal", "Journal"]].map(([id, label]) => <a key={id} href={`#${id}`} onClick={() => scrollTo(id)}>{label}</a>)}</nav>
+        <nav className={`app-nav ${menuOpen ? "open" : ""}`}>{[["home", "Home"], ["story", "Story"], ["shop", "Shop"], ["events", "Events"], ["journal", "Journal"]].map(([id, label]) => <a key={id} href={`#${id}`} onClick={() => scrollTo(id)}>{label}</a>)}<a href="/commission">Commissions</a></nav>
         <div className="header-right"><a className="header-instagram" href="https://www.instagram.com/t.ww2.k" target="_blank" rel="noreferrer"><Instagram size={17} /> <span>Follow along</span></a><button className="bag-button" onClick={() => { setShopOpen(true); scrollTo("shop"); }} aria-label="Open shop"><ShoppingBag size={18} /><span>Shop</span></button><button className="mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">{menuOpen ? <X size={20} /> : <Menu size={20} />}</button></div>
       </header>
 

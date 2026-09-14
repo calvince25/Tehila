@@ -20,6 +20,9 @@ import {
   createJournalPost,
   deleteJournalPost,
   getJournalPostBySlug,
+  createCommissionEnquiry,
+  deleteCommissionEnquiry,
+  listCommissionEnquiries,
   listAdminJournalPosts,
   listPublishedJournalPosts,
   updateJournalPost,
@@ -96,10 +99,21 @@ export const contentRouter = router({
     return { canvases, events, images, journal };
   }),
   journalBySlug: publicProcedure.input(z.object({ slug: z.string().min(1) })).query(({ input }) => getJournalPostBySlug(input.slug)),
+  submitCommission: publicProcedure.input(z.object({
+    name: z.string().min(1).max(160),
+    email: z.string().email().max(320),
+    project_type: z.string().min(1).max(180),
+    room: z.string().max(180).optional().nullable(),
+    size: z.string().max(120).optional().nullable(),
+    budget: z.string().max(120).optional().nullable(),
+    timeline: z.string().max(180).optional().nullable(),
+    message: z.string().min(1).max(5000),
+  })).mutation(({ input }) => createCommissionEnquiry({ ...input, room: input.room ?? null, size: input.size ?? null, budget: input.budget ?? null, timeline: input.timeline ?? null })),
 });
 
 export const cmsRouter = router({
-  all: adminProcedure.query(async () => ({ ...(await listAdminContent()), journal: await listAdminJournalPosts() })),
+  all: adminProcedure.query(async () => ({ ...(await listAdminContent()), journal: await listAdminJournalPosts(), enquiries: await listCommissionEnquiries() })),
+  deleteEnquiry: adminProcedure.input(z.object({ id: z.number().int() })).mutation(({ input }) => deleteCommissionEnquiry(input.id)),
 
   uploadImage: adminProcedure.input(uploadInput).mutation(async ({ input, ctx }) => {
     if (input.data.length > 8_000_000) {

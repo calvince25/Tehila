@@ -7,17 +7,20 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import JournalPost from "./pages/JournalPost";
+import Commission from "./pages/Commission";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/commission" component={Commission} />
       <Route path="/journal/:slug" component={JournalPost} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/canvases" component={AdminDashboard} />
       <Route path="/admin/events" component={AdminDashboard} />
       <Route path="/admin/journal" component={AdminDashboard} />
       <Route path="/admin/images" component={AdminDashboard} />
+      <Route path="/admin/enquiries" component={AdminDashboard} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
