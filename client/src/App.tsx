@@ -8,12 +8,15 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import JournalPost from "./pages/JournalPost";
 import Commission from "./pages/Commission";
+import AuthPage from "./pages/AuthPage";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/commission" component={Commission} />
+      <Route path="/login"><AuthPage mode="login" /></Route>
+      <Route path="/register"><AuthPage mode="register" /></Route>
       <Route path="/journal/:slug" component={JournalPost} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/canvases" component={AdminDashboard} />
@@ -21,6 +24,7 @@ function Router() {
       <Route path="/admin/journal" component={AdminDashboard} />
       <Route path="/admin/images" component={AdminDashboard} />
       <Route path="/admin/enquiries" component={AdminDashboard} />
+      <Route path="/admin/users" component={AdminDashboard} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>

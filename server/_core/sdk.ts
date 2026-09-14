@@ -170,7 +170,7 @@ class SDKServer {
     return this.signSession(
       {
         openId,
-        appId: ENV.appId,
+        appId: ENV.appId || "local-auth",
         name: options.name || "",
       },
       options
@@ -309,6 +309,14 @@ class SDKServer {
 
     if (!user) {
       throw ForbiddenError("User not found");
+    }
+
+    if (user.loginMethod !== "password") {
+      throw ForbiddenError("Please register for a local Threaded Forms account first");
+    }
+
+    if (user.isApproved !== 1) {
+      throw ForbiddenError("This account is awaiting admin approval");
     }
 
     await db.upsertUser({

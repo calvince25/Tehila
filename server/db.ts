@@ -66,6 +66,59 @@ export async function getUserByOpenId(openId: string) {
   return result[0];
 }
 
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+  return result[0];
+}
+
+export async function createLocalUser(input: { name: string; email: string; passwordHash: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const existing = await getUserByEmail(input.email);
+  if (existing) throw new Error("An account with this email already exists.");
+  const localUsers = await db.select({ id: users.id }).from(users).where(eq(users.loginMethod, "password")).limit(1);
+  const isFirst = localUsers.length === 0;
+  const openId = `local_${crypto.randomUUID()}`;
+  const result = await db.insert(users).values({
+    openId,
+    name: input.name,
+    email: input.email,
+    passwordHash: input.passwordHash,
+    loginMethod: "password",
+    role: isFirst ? "admin" : "user",
+    isApproved: isFirst ? 1 : 0,
+    isDefaultAdmin: isFirst ? 1 : 0,
+    lastSignedIn: new Date(),
+  });
+  return { id: Number(result[0].insertId), openId, name: input.name, email: input.email, role: isFirst ? "admin" as const : "user" as const, isApproved: isFirst ? 1 : 0, isDefaultAdmin: isFirst ? 1 : 0 };
+}
+
+export async function listAdminUsers() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select({ id: users.id, openId: users.openId, name: users.name, email: users.email, loginMethod: users.loginMethod, role: users.role, isApproved: users.isApproved, isDefaultAdmin: users.isDefaultAdmin, createdAt: users.createdAt, lastSignedIn: users.lastSignedIn }).from(users).orderBy(desc(users.createdAt));
+}
+
+export async function setUserApproval(id: number, isApproved: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const target = await db.select({ isDefaultAdmin: users.isDefaultAdmin }).from(users).where(eq(users.id, id)).limit(1);
+  if (target[0]?.isDefaultAdmin && isApproved === 0) throw new Error("The default admin must remain approved.");
+  await db.update(users).set({ isApproved }).where(eq(users.id, id));
+  return id;
+}
+
+export async function deleteUserAccount(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const target = await db.select({ isDefaultAdmin: users.isDefaultAdmin }).from(users).where(eq(users.id, id)).limit(1);
+  if (target[0]?.isDefaultAdmin) throw new Error("The default admin account cannot be deleted.");
+  await db.delete(users).where(eq(users.id, id));
+  return id;
+}
+
 export async function listCanvases() {
   const db = await getDb();
   if (!db) return [];
@@ -95,65 +148,12 @@ export async function listAdminContent() {
   return { canvases: canvasRows, events: eventRows, images: imageRows };
 }
 
-export async function createCanvas(input: InsertCanvas) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not available");
-  const result = await db.insert(canvases).values(input);
-  return Number(result[0].insertId);
-}
-
-export async function updateCanvas(id: number, input: Partial<InsertCanvas>) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not available");
-  await db.update(canvases).set(input).where(eq(canvases.id, id));
-  return id;
-}
-
-export async function deleteCanvas(id: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not available");
-  await db.delete(canvases).where(eq(canvases.id, id));
-  return id;
-}
-
-export async function createStudioEvent(input: InsertStudioEvent) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not available");
-  const result = await db.insert(studioEvents).values(input);
-  return Number(result[0].insertId);
-}
-
-export async function updateStudioEvent(id: number, input: Partial<InsertStudioEvent>) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not available");
-  await db.update(studioEvents).set(input).where(eq(studioEvents.id, id));
-  return id;
-}
-
-export async function deleteStudioEvent(id: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not available");
-  await db.delete(studioEvents).where(eq(studioEvents.id, id));
-  return id;
-}
-
-export async function createPortfolioImage(input: InsertPortfolioImage) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not available");
-  const result = await db.insert(portfolioImages).values(input);
-  return Number(result[0].insertId);
-}
-
-export async function updatePortfolioImage(id: number, input: Partial<InsertPortfolioImage>) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not available");
-  await db.update(portfolioImages).set(input).where(eq(portfolioImages.id, id));
-  return id;
-}
-
-export async function deletePortfolioImage(id: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database is not available");
-  await db.delete(portfolioImages).where(eq(portfolioImages.id, id));
-  return id;
-}
+export async function createCanvas(input: InsertCanvas) { const db = await getDb(); if (!db) throw new Error("Database is not available"); const result = await db.insert(canvases).values(input); return Number(result[0].insertId); }
+export async function updateCanvas(id: number, input: Partial<InsertCanvas>) { const db = await getDb(); if (!db) throw new Error("Database is not available"); await db.update(canvases).set(input).where(eq(canvases.id, id)); return id; }
+export async function deleteCanvas(id: number) { const db = await getDb(); if (!db) throw new Error("Database is not available"); await db.delete(canvases).where(eq(canvases.id, id)); return id; }
+export async function createStudioEvent(input: InsertStudioEvent) { const db = await getDb(); if (!db) throw new Error("Database is not available"); const result = await db.insert(studioEvents).values(input); return Number(result[0].insertId); }
+export async function updateStudioEvent(id: number, input: Partial<InsertStudioEvent>) { const db = await getDb(); if (!db) throw new Error("Database is not available"); await db.update(studioEvents).set(input).where(eq(studioEvents.id, id)); return id; }
+export async function deleteStudioEvent(id: number) { const db = await getDb(); if (!db) throw new Error("Database is not available"); await db.delete(studioEvents).where(eq(studioEvents.id, id)); return id; }
+export async function createPortfolioImage(input: InsertPortfolioImage) { const db = await getDb(); if (!db) throw new Error("Database is not available"); const result = await db.insert(portfolioImages).values(input); return Number(result[0].insertId); }
+export async function updatePortfolioImage(id: number, input: Partial<InsertPortfolioImage>) { const db = await getDb(); if (!db) throw new Error("Database is not available"); await db.update(portfolioImages).set(input).where(eq(portfolioImages.id, id)); return id; }
+export async function deletePortfolioImage(id: number) { const db = await getDb(); if (!db) throw new Error("Database is not available"); await db.delete(portfolioImages).where(eq(portfolioImages.id, id)); return id; }

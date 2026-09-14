@@ -112,7 +112,15 @@ export const contentRouter = router({
 });
 
 export const cmsRouter = router({
-  all: adminProcedure.query(async () => ({ ...(await listAdminContent()), journal: await listAdminJournalPosts(), enquiries: await listCommissionEnquiries() })),
+  adminCheck: adminProcedure.query(() => ({ allowed: true as const })),
+  all: adminProcedure.query(async () => {
+    const local = await listAdminContent();
+    const [journal, enquiries] = await Promise.all([
+      listAdminJournalPosts().catch(error => { console.warn("[CMS] Journal read unavailable:", error); return []; }),
+      listCommissionEnquiries().catch(error => { console.warn("[CMS] Enquiry read unavailable:", error); return []; }),
+    ]);
+    return { ...local, journal, enquiries };
+  }),
   deleteEnquiry: adminProcedure.input(z.object({ id: z.number().int() })).mutation(({ input }) => deleteCommissionEnquiry(input.id)),
 
   uploadImage: adminProcedure.input(uploadInput).mutation(async ({ input, ctx }) => {

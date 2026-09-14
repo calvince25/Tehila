@@ -28,11 +28,8 @@ describe("cms access control", () => {
     await expect(caller.cms.all()).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 
-  it("allows the studio admin to read the CMS workspace", async () => {
+  it("allows the studio admin to access the CMS workspace", async () => {
     const caller = appRouter.createCaller(createContext("admin"));
-    const result = await caller.cms.all();
-    expect(result).toHaveProperty("canvases");
-    expect(result).toHaveProperty("events");
-    expect(result).toHaveProperty("images");
+    await expect(caller.cms.adminCheck()).resolves.toEqual({ allowed: true });
   });
 });

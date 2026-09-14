@@ -19,9 +19,8 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { CalendarDays, FileText, Image, Inbox, LayoutDashboard, LogOut, PanelLeft, Palette } from "lucide-react";
+import { CalendarDays, FileText, Image, Inbox, LayoutDashboard, LogOut, PanelLeft, Palette, Users } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -34,6 +33,7 @@ const menuItems = [
   { icon: FileText, label: "Journal", path: "/admin/journal" },
   { icon: Image, label: "Portfolio images", path: "/admin/images" },
   { icon: Inbox, label: "Enquiries", path: "/admin/enquiries" },
+  { icon: Users, label: "Users", path: "/admin/users" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -69,11 +69,11 @@ export default function DashboardLayout({
               Sign in to continue
             </h1>
             <p className="text-sm text-muted-foreground text-center max-w-sm">
-              Access to this dashboard requires authentication. Continue to launch the login flow.
+              Sign in with an approved Threaded Forms account to access the studio desk.
             </p>
           </div>
           <Button
-            onClick={() => startLogin()}
+            onClick={() => { window.location.href = "/login"; }}
             size="lg"
             className="w-full shadow-lg hover:shadow-xl transition-all"
           >

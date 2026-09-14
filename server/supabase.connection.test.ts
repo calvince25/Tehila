@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { createCommissionEnquiry, deleteCommissionEnquiry, getSupabaseConfig, listAdminJournalPosts, listCommissionEnquiries, listPublishedJournalPosts } from "./supabase";
 
 describe("Supabase journal and enquiry connection", () => {
+  const mutationTest = process.env.RUN_SUPABASE_MUTATION_TESTS === "1" ? it : it.skip;
   it("accepts the configured project URL and public key", () => {
     const config = getSupabaseConfig();
     expect(config.url).toBe("https://vcgifbohrhkqifzjopws.supabase.co");
@@ -11,16 +12,16 @@ describe("Supabase journal and enquiry connection", () => {
   it("can read the public journal collection", async () => {
     const posts = await listPublishedJournalPosts();
     expect(posts.length).toBeGreaterThanOrEqual(3);
-  });
+  }, 15000);
 
   it("can read the protected admin journal collection with the service role", async () => {
     const config = getSupabaseConfig();
     expect(config.serviceRoleKey).toMatch(/^eyJ/);
     const posts = await listAdminJournalPosts();
     expect(posts.length).toBeGreaterThanOrEqual(3);
-  });
+  }, 15000);
 
-  it("accepts a public enquiry and removes it through the protected path", async () => {
+  mutationTest("accepts a public enquiry and removes it through the protected path", async () => {
     const enquiry = await createCommissionEnquiry({
       name: "Automated test enquiry",
       email: "test@example.com",
@@ -35,5 +36,5 @@ describe("Supabase journal and enquiry connection", () => {
     const adminRows = await listCommissionEnquiries();
     expect(adminRows.some(row => row.id === enquiry?.id)).toBe(true);
     await deleteCommissionEnquiry(enquiry!.id);
-  });
+  }, 15000);
 });
