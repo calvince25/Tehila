@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
+import { Seo, studioJsonLd } from "@/components/Seo";
 
 const fallbackMedia = {
   pink: "/manus-storage/pink-orbit_e98112f2.jpg",
@@ -34,6 +35,7 @@ type Product = { id?: number; title: string; kind: string; price: string; size: 
 type EventItem = { id?: number; startAt: Date | string; endAt: Date | string; title: string; type: string; venue: string; city: string; time: string; description: string; accent: string };
 
 type ImageRow = { name: string; imageUrl: string; altText: string };
+type JournalItem = { id?: number; slug: string; date: string; title: string; category: string; image: string; copy: string; body?: string; altText?: string };
 
 const fallbackProducts: Product[] = [
   { title: "Orbit in Pink", kind: "Original wall work", price: "€420", size: "60 × 60 cm", image: fallbackMedia.pink, status: "Available", description: "A concentric study in rose thread, built slowly over a warm neutral ground." },
@@ -46,6 +48,12 @@ const fallbackEvents: EventItem[] = [
   { startAt: "2026-10-12T12:00:00+03:00", endAt: "2026-10-12T17:00:00+03:00", title: "Open studio afternoon", type: "Studio visit", venue: "Threaded Forms Studio", city: "Nairobi · Lavington", time: "12:00—17:00", description: "Come see the work in progress, touch the materials, and spend an unhurried afternoon in the studio.", accent: "coral" },
   { startAt: "2026-11-03T18:00:00+03:00", endAt: "2026-11-03T21:00:00+03:00", title: "Soft Geometry", type: "Group exhibition", venue: "The Gallery Room", city: "Nairobi · Westlands", time: "18:00—21:00", description: "A group show about texture, repetition, and the shapes that happen when a line is given time.", accent: "sage" },
   { startAt: "2026-11-23T10:00:00+03:00", endAt: "2026-11-23T13:00:00+03:00", title: "Thread / Tension / Time", type: "Workshop", venue: "The Makers' Table", city: "Nairobi · Kilimani", time: "10:00—13:00", description: "A small hands-on workshop for anyone curious about building a first string-art piece.", accent: "plum" },
+];
+
+const fallbackJournal: JournalItem[] = [
+  { slug: "the-line-is-never-really-straight", date: "18 SEP 2026", title: "The line is never really straight", category: "Studio note", image: fallbackMedia.process, copy: "A few thoughts on letting the material lead instead of correcting every small turn.", body: "A few thoughts on letting the material lead instead of correcting every small turn." },
+  { slug: "a-new-pink-orbit", date: "06 SEP 2026", title: "A new pink orbit", category: "New work", image: fallbackMedia.pink, copy: "The piece that started with one loose circle and ended up holding the whole wall.", body: "The piece that started with one loose circle and ended up holding the whole wall." },
+  { slug: "what-happens-in-the-quiet", date: "27 AUG 2026", title: "What happens in the quiet", category: "From the studio", image: fallbackMedia.maker, copy: "A morning of cutting, winding, undoing, and starting again.", body: "A morning of cutting, winding, undoing, and starting again." },
 ];
 
 const typeLabels: Record<string, string> = { studio_visit: "Studio visit", group_exhibition: "Group exhibition", workshop: "Workshop" };
@@ -124,11 +132,7 @@ export default function Home() {
   const products = useMemo<Product[]>(() => content?.canvases?.length ? content.canvases.map((item) => ({ id: item.id, title: item.title, kind: item.kind, price: item.price, size: item.size, image: item.imageUrl, status: statusLabels[item.status] ?? item.status, description: item.description })) : fallbackProducts, [content?.canvases]);
   const events = useMemo<EventItem[]>(() => content?.events?.length ? content.events.map((item) => ({ id: item.id, startAt: item.startAt, endAt: item.endAt, title: item.title, type: typeLabels[item.type] ?? item.type, venue: item.venue, city: item.city, time: `${asDate(item.startAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}—${asDate(item.endAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`, description: item.description, accent: item.accent })) : fallbackEvents, [content?.events]);
   const filteredEvents = useMemo(() => eventFilter === "All events" ? events : events.filter((event) => event.type === eventFilter), [eventFilter, events]);
-  const journal = [
-    { date: "18 SEP 2026", title: "The line is never really straight", category: "Studio note", image: media("process"), copy: "A few thoughts on letting the material lead instead of correcting every small turn." },
-    { date: "06 SEP 2026", title: "A new pink orbit", category: "New work", image: media("pink"), copy: "The piece that started with one loose circle and ended up holding the whole wall." },
-    { date: "27 AUG 2026", title: "What happens in the quiet", category: "From the studio", image: media("maker"), copy: "A morning of cutting, winding, undoing, and starting again." },
-  ];
+  const journal = useMemo<JournalItem[]>(() => content?.journal?.length ? content.journal.map((entry) => ({ id: entry.id, slug: entry.slug, date: new Date(entry.published_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase(), title: entry.title, category: entry.category, image: entry.image_url, copy: entry.excerpt, body: entry.body, altText: entry.alt_text })) : fallbackJournal.map((entry) => ({ ...entry, image: entry.image.startsWith("/manus-storage") ? media(entry.slug === "a-new-pink-orbit" ? "pink" : entry.slug === "what-happens-in-the-quiet" ? "maker" : "process") : entry.image })), [content?.journal, media]);
 
   const scrollTo = (id: string) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); };
   const toggleEvent = (title: string) => { const isSaved = savedEvents.includes(title); setSavedEvents((current) => isSaved ? current.filter((item) => item !== title) : [...current, title]); toast.success(isSaved ? "Event removed from your list." : "Event saved.", { description: "Use the calendar actions to save the date to your calendar." }); };
@@ -136,6 +140,7 @@ export default function Home() {
 
   return (
     <main className="studio-app">
+      <Seo title="Threaded Forms — Tehila's studio in Nairobi" description="Discover Tehila's contemporary string-art, textile wall pieces, studio journal, workshops, and upcoming events in Nairobi, Kenya." path="/" jsonLd={studioJsonLd()} />
       <header className="app-header">
         <a className="studio-logo" href="#home" onClick={() => scrollTo("home")}><span className="logo-mark"><CircleDot size={17} /></span><span><b>Threaded Forms</b><small>Tehila's studio</small></span></a>
         <nav className={`app-nav ${menuOpen ? "open" : ""}`}>{[["home", "Home"], ["story", "Story"], ["shop", "Shop"], ["events", "Events"], ["journal", "Journal"]].map(([id, label]) => <a key={id} href={`#${id}`} onClick={() => scrollTo(id)}>{label}</a>)}</nav>
@@ -155,7 +160,7 @@ export default function Home() {
 
       <section className="events-section app-section" id="events"><div className="section-topline"><div><div className="section-kicker light-kicker"><span className="kicker-line" /> 03 / Come say hi</div><h2>Where to find<br /><em>me next.</em></h2></div><div className="section-description light-description"><p>Open studios, exhibitions, and small workshops. Save a date, bring a friend, and come see the work in person.</p><a className="underlined-link light-link" href="mailto:hello@threadedforms.studio?subject=Event%20question">Ask about an event <ArrowUpRight size={15} /></a></div></div><div className="event-tabs">{["All events", "Studio visit", "Group exhibition", "Workshop"].map((filter) => <button className={eventFilter === filter ? "active" : ""} key={filter} onClick={() => setEventFilter(filter)}>{filter}</button>)}</div><div className="event-list">{filteredEvents.map((event) => <article className={`event-card event-${event.accent}`} key={event.id ?? event.title}><div className="event-date"><b>{formatMonth(event.startAt)}</b><strong>{formatDay(event.startAt)}</strong><span>{formatYear(event.startAt)}</span></div><div className="event-main"><div className="event-label">{event.type}</div><h3>{event.title}</h3><p>{event.description}</p><div className="event-details"><span><Clock3 size={14} /> {event.time}</span><span><MapPin size={14} /> {event.venue} · {event.city}</span></div></div><div className="event-actions"><button className={`save-event ${savedEvents.includes(event.title) ? "saved" : ""}`} onClick={() => toggleEvent(event.title)}>{savedEvents.includes(event.title) ? <><Check size={15} /> Saved</> : <>Save date <Plus size={15} /></>}</button><div className="calendar-actions"><a className="calendar-button" href={googleCalendarUrl(event)} target="_blank" rel="noreferrer"><CalendarDays size={13} /> Google</a><button className="calendar-button" onClick={() => downloadAppleCalendar(event)}><CalendarDays size={13} /> Apple / .ics</button></div></div></article>)}</div></section>
 
-      <section className="journal-section app-section" id="journal"><div className="section-topline"><div><div className="section-kicker"><span className="kicker-line" /> 04 / From the journal</div><h2>Small notes<br /><em>from the making.</em></h2></div><a className="underlined-link" href="https://www.instagram.com/t.ww2.k" target="_blank" rel="noreferrer">More on Instagram <ExternalLink size={15} /></a></div><div className="journal-grid">{journal.map((entry) => <article className="journal-card" key={entry.title}><img src={entry.image} alt={entry.title} /><div className="journal-meta"><span>{entry.category}</span><span>{entry.date}</span></div><h3>{entry.title}</h3><p>{entry.copy}</p><button className="journal-read">Read note <ArrowRight size={15} /></button></article>)}</div></section>
+      <section className="journal-section app-section" id="journal"><div className="section-topline"><div><div className="section-kicker"><span className="kicker-line" /> 04 / From the journal</div><h2>Small notes<br /><em>from the making.</em></h2></div><a className="underlined-link" href="https://www.instagram.com/t.ww2.k" target="_blank" rel="noreferrer">More on Instagram <ExternalLink size={15} /></a></div><div className="journal-grid">{journal.map((entry) => <article className="journal-card" key={entry.slug}><a href={`/journal/${entry.slug}`}><img src={entry.image} alt={entry.altText ?? entry.title} /><div className="journal-meta"><span>{entry.category}</span><span>{entry.date}</span></div><h3>{entry.title}</h3><p>{entry.copy}</p><span className="journal-read">Read note <ArrowRight size={15} /></span></a></article>)}</div></section>
 
       <section className="contact-section" id="contact"><div className="contact-copy"><div className="section-kicker light-kicker"><span className="kicker-line" /> Keep in touch</div><h2>Come back<br /><em>soon?</em></h2><p>Join the studio list for new work, events, and the occasional note from the table. No noise, just the good stuff.</p><a href="mailto:hello@threadedforms.studio" className="email-link">hello@threadedforms.studio <ArrowUpRight size={16} /></a></div><form className="signup-form" onSubmit={subscribe}><label htmlFor="studio-email">Your email address</label><div className="signup-line"><input id="studio-email" value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="you@example.com" required /><button type="submit" aria-label="Join the studio list"><ArrowRight size={19} /></button></div><span>By joining, you’re saying yes to a small, thoughtful inbox.</span></form></section>
 

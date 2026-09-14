@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { CalendarDays, Image, LayoutDashboard, LogOut, PanelLeft, Palette } from "lucide-react";
+import { CalendarDays, FileText, Image, LayoutDashboard, LogOut, PanelLeft, Palette } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -31,6 +31,7 @@ const menuItems = [
   { icon: LayoutDashboard, label: "Overview", path: "/admin" },
   { icon: Palette, label: "Shop canvases", path: "/admin/canvases" },
   { icon: CalendarDays, label: "Events", path: "/admin/events" },
+  { icon: FileText, label: "Journal", path: "/admin/journal" },
   { icon: Image, label: "Portfolio images", path: "/admin/images" },
 ];
 
