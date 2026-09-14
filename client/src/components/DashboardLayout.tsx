@@ -44,13 +44,13 @@ const MAX_WIDTH = 480;
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode | ((auth: { user: NonNullable<ReturnType<typeof useAuth>["user"]>; logout: ReturnType<typeof useAuth>["logout"] }) => React.ReactNode);
 }) {
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     const saved = localStorage.getItem(SIDEBAR_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_WIDTH;
   });
-  const { loading, user } = useAuth();
+  const { loading, user, logout } = useAuth();
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_WIDTH_KEY, sidebarWidth.toString());
@@ -92,8 +92,8 @@ export default function DashboardLayout({
         } as CSSProperties
       }
     >
-      <DashboardLayoutContent setSidebarWidth={setSidebarWidth}>
-        {children}
+      <DashboardLayoutContent setSidebarWidth={setSidebarWidth} user={user} logout={logout}>
+        {typeof children === "function" ? children({ user, logout }) : children}
       </DashboardLayoutContent>
     </SidebarProvider>
   );
@@ -102,13 +102,16 @@ export default function DashboardLayout({
 type DashboardLayoutContentProps = {
   children: React.ReactNode;
   setSidebarWidth: (width: number) => void;
+  user: NonNullable<ReturnType<typeof useAuth>["user"]>;
+  logout: ReturnType<typeof useAuth>["logout"];
 };
 
 function DashboardLayoutContent({
   children,
   setSidebarWidth,
+  user,
+  logout,
 }: DashboardLayoutContentProps) {
-  const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -224,7 +227,7 @@ function DashboardLayoutContent({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem
-                  onClick={logout}
+                  onClick={() => { setLocation("/login"); void logout(); }}
                   className="cursor-pointer text-destructive focus:text-destructive"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
@@ -232,6 +235,17 @@ function DashboardLayoutContent({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <button
+              type="button"
+              onClick={async () => {
+                setLocation("/login");
+                void logout();
+              }}
+              className="mt-2 flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive focus:outline-none focus-visible:ring-2 focus-visible:ring-ring group-data-[collapsible=icon]:justify-center"
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              <span className="group-data-[collapsible=icon]:hidden">Log out</span>
+            </button>
           </SidebarFooter>
         </Sidebar>
         <div

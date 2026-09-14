@@ -50,7 +50,7 @@ export function Seo({ title, description, path = "/", image, type = "website", j
 export function studioJsonLd() {
   return [
     { "@context": "https://schema.org", "@type": "Person", name: "Tehila", jobTitle: "Contemporary fiber and string-art artist", url: SITE_URL, sameAs: ["https://www.instagram.com/t.ww2.k"] },
-    { "@context": "https://schema.org", "@type": "ArtGallery", name: "Threaded Forms Studio", description: "Tehila's Nairobi studio for contemporary string art, textile pieces, studio notes, and workshops.", url: SITE_URL, image: new URL("/manus-storage/maker-at-work_575171a1.jpg", SITE_URL).toString(), address: { "@type": "PostalAddress", addressLocality: "Nairobi", addressCountry: "KE" }, areaServed: ["Nairobi", "Kenya"], founder: { "@type": "Person", name: "Tehila" }, sameAs: ["https://www.instagram.com/t.ww2.k"] },
+    { "@context": "https://schema.org", "@type": "ArtGallery", name: "Threaded Forms Studio", description: "Tehila's Nairobi studio for contemporary string art, textile pieces, studio notes, and workshops.", url: SITE_URL, image: new URL("/studio-assets/maker-at-work.jpg", SITE_URL).toString(), address: { "@type": "PostalAddress", addressLocality: "Nairobi", addressCountry: "KE" }, areaServed: ["Nairobi", "Kenya"], founder: { "@type": "Person", name: "Tehila" }, sameAs: ["https://www.instagram.com/t.ww2.k"] },
     { "@context": "https://schema.org", "@type": "WebSite", name: "Threaded Forms — Tehila's studio", url: SITE_URL, inLanguage: "en-KE", potentialAction: { "@type": "SearchAction", target: `${SITE_URL}/journal/{search_term_string}`, "query-input": "required name=search_term_string" } },
   ];
 }

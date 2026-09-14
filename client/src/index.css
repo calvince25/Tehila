@@ -238,3 +238,20 @@
 .cms-approval-pill.pending { color: #8a5a27; background: #f3e5c6; }
 @media (max-width: 800px) { .auth-page { grid-template-columns: 1fr; } .auth-art { min-height: 370px; } .auth-art-copy { margin: 65px 0 45px; } .auth-art h1 { font-size: 58px; } .auth-card-wrap { width: 100%; padding-top: 45px; } .auth-brand { margin-bottom: 48px; } }
 @media (max-width: 560px) { .cms-user-record { align-items: flex-start; flex-wrap: wrap; } .cms-user-status { flex: 1 1 100%; flex-direction: row; justify-content: space-between; margin-left: 62px; } }
+
+/* Featured welcome portrait: intentionally larger than the supporting portfolio cards. */
+.hero-collage { min-height: 620px; }
+.portrait-card { width: min(82%, 560px); height: 600px; right: 5%; top: -15px; }
+.portrait-card img { object-fit: cover; }
+@media (max-width: 1100px) {
+  .hero-collage { min-height: 570px; }
+  .portrait-card { width: min(82%, 510px); height: 550px; }
+}
+@media (max-width: 900px) {
+  .hero-collage { min-height: 540px; }
+  .portrait-card { width: min(82%, 490px); height: 520px; }
+}
+@media (max-width: 700px) {
+  .hero-collage { min-height: 500px; }
+  .portrait-card { width: 82%; height: 450px; right: 4%; top: 0; }
+}

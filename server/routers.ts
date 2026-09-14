@@ -24,7 +24,7 @@ export const appRouter = router({
     me: publicProcedure.query(opts => opts.ctx.user),
     register: publicProcedure.input(z.object({
       name: z.string().trim().min(2).max(120),
-      email: z.string().email().max(320),
+      email: z.string().trim().email().max(320),
       password: z.string().min(8).max(200),
     })).mutation(async ({ input }) => {
       const email = normalizeEmail(input.email);
@@ -32,7 +32,7 @@ export const appRouter = router({
       const user = await createLocalUser({ name: input.name.trim(), email, passwordHash: await hashPassword(input.password) });
       return { ...safeUser(user), message: user.isDefaultAdmin ? "Registration complete. You are the default admin; you can now log in." : "Registration complete. The default admin must approve your account before you can log in." };
     }),
-    login: publicProcedure.input(z.object({ email: z.string().email().max(320), password: z.string().min(1).max(200) })).mutation(async ({ input, ctx }) => {
+    login: publicProcedure.input(z.object({ email: z.string().trim().email().max(320), password: z.string().min(1).max(200) })).mutation(async ({ input, ctx }) => {
       const user = await getUserByEmail(normalizeEmail(input.email));
       if (!user || user.loginMethod !== "password" || !user.passwordHash || !(await verifyPassword(input.password, user.passwordHash))) {
         throw new TRPCError({ code: "UNAUTHORIZED", message: "Incorrect email or password." });

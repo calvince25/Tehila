@@ -106,7 +106,7 @@ export async function setUserApproval(id: number, isApproved: number) {
   if (!db) throw new Error("Database is not available");
   const target = await db.select({ isDefaultAdmin: users.isDefaultAdmin }).from(users).where(eq(users.id, id)).limit(1);
   if (target[0]?.isDefaultAdmin && isApproved === 0) throw new Error("The default admin must remain approved.");
-  await db.update(users).set({ isApproved }).where(eq(users.id, id));
+  await db.update(users).set({ isApproved, role: isApproved === 1 ? "admin" : "user" }).where(eq(users.id, id));
   return id;
 }
 

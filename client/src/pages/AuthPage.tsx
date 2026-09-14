@@ -13,7 +13,7 @@ export default function AuthPage({ mode }: { mode: "login" | "register" }) {
   const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState("");
   const utils = trpc.useUtils();
-  const login = trpc.auth.login.useMutation({ onSuccess: async () => { await utils.auth.me.invalidate(); setLocation("/admin"); } });
+  const login = trpc.auth.login.useMutation({ onSuccess: (user) => { utils.auth.me.setData(undefined, user as never); setLocation("/admin"); } });
   const register = trpc.auth.register.useMutation({ onSuccess: (result) => { setNotice(result.message); toast.success(result.isDefaultAdmin ? "Default admin account created." : "Registration received."); if (!result.isDefaultAdmin) { setPassword(""); } } });
 
   useEffect(() => { setNotice(""); }, [mode]);

@@ -23,13 +23,13 @@ import { Seo, studioJsonLd } from "@/components/Seo";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 
 const fallbackMedia = {
-  pink: "/manus-storage/pink-orbit_e98112f2.jpg",
-  maker: "/manus-storage/maker-at-work_575171a1.jpg",
-  violet: "/manus-storage/violet-orbit_ef8b1733.jpg",
-  process: "/manus-storage/process-closeup_eccb9460.jpg",
-  sun: "/manus-storage/woven-sun_b8375056.jpg",
-  terrain: "/manus-storage/textile-landscape_bcec7a53.jpg",
-  grid: "/manus-storage/studio-grid_499fcdaf.jpg",
+  pink: "/studio-assets/pink-orbit.jpg",
+  maker: "/studio-assets/maker-at-work.jpg",
+  violet: "/studio-assets/violet-orbit.jpg",
+  process: "/studio-assets/process-closeup.jpg",
+  sun: "/studio-assets/woven-sun.jpg",
+  terrain: "/studio-assets/textile-landscape.jpg",
+  grid: "/studio-assets/studio-grid.jpg",
 };
 
 type Product = { id?: number; title: string; kind: string; price: string; size: string; image: string; status: string; description: string };
@@ -38,11 +38,26 @@ type EventItem = { id?: number; startAt: Date | string; endAt: Date | string; ti
 type ImageRow = { name: string; imageUrl: string; altText: string };
 type JournalItem = { id?: number; slug: string; date: string; title: string; category: string; image: string; copy: string; body?: string; altText?: string };
 
+function resolveStudioImage(url: string | undefined) {
+  if (!url) return url;
+  const legacyMap: Record<string, string> = {
+    "pink-orbit_e98112f2.jpg": "/studio-assets/pink-orbit.jpg",
+    "maker-at-work_575171a1.jpg": "/studio-assets/maker-at-work.jpg",
+    "violet-orbit_ef8b1733.jpg": "/studio-assets/violet-orbit.jpg",
+    "process-closeup_eccb9460.jpg": "/studio-assets/process-closeup.jpg",
+    "woven-sun_b8375056.jpg": "/studio-assets/woven-sun.jpg",
+    "textile-landscape_bcec7a53.jpg": "/studio-assets/textile-landscape.jpg",
+    "studio-grid_499fcdaf.jpg": "/studio-assets/studio-grid.jpg",
+  };
+  const key = url.split("/").pop() ?? "";
+  return legacyMap[key] ?? url;
+}
+
 const fallbackProducts: Product[] = [
-  { title: "Orbit in Pink", kind: "Original wall work", price: "€420", size: "60 × 60 cm", image: fallbackMedia.pink, status: "Available", description: "A concentric study in rose thread, built slowly over a warm neutral ground." },
-  { title: "Violet Current", kind: "Original wall work", price: "€390", size: "50 × 70 cm", image: fallbackMedia.violet, status: "Available", description: "Deep violet moving through blush, made to shift with the light in a room." },
-  { title: "Woven Sun", kind: "Fiber study", price: "€145", size: "35 cm diameter", image: fallbackMedia.sun, status: "One of one", description: "A smaller circular piece with layered thread, soft geometry, and saturated color." },
-  { title: "Coastal Terrain", kind: "Original wall work", price: "€360", size: "45 × 60 cm", image: fallbackMedia.terrain, status: "Coming soon", description: "A tactile landscape drawn with moss, clay, and the irregular rhythm of hand-wound fiber." },
+  { title: "Orbit in Pink", kind: "Original wall work", price: "KSh 60,900", size: "60 × 60 cm", image: fallbackMedia.pink, status: "Available", description: "A concentric study in rose thread, built slowly over a warm neutral ground." },
+  { title: "Violet Current", kind: "Original wall work", price: "KSh 56,550", size: "50 × 70 cm", image: fallbackMedia.violet, status: "Available", description: "Deep violet moving through blush, made to shift with the light in a room." },
+  { title: "Woven Sun", kind: "Fiber study", price: "KSh 21,025", size: "35 cm diameter", image: fallbackMedia.sun, status: "One of one", description: "A smaller circular piece with layered thread, soft geometry, and saturated color." },
+  { title: "Coastal Terrain", kind: "Original wall work", price: "KSh 52,200", size: "45 × 60 cm", image: fallbackMedia.terrain, status: "Coming soon", description: "A tactile landscape drawn with moss, clay, and the irregular rhythm of hand-wound fiber." },
 ];
 
 const fallbackEvents: EventItem[] = [
@@ -62,6 +77,17 @@ const statusLabels: Record<string, string> = { available: "Available", one_of_on
 
 function asDate(value: Date | string) {
   return value instanceof Date ? value : new Date(value);
+}
+
+function formatPrice(value: string | undefined) {
+  if (!value) return "Price on request";
+  const legacyEuro = value.match(/€\s*([\d,.]+)/);
+  if (legacyEuro) {
+    const euros = Number(legacyEuro[1].replace(/,/g, ""));
+    if (Number.isFinite(euros)) return `KSh ${Math.round(euros * 145).toLocaleString("en-KE")}`;
+  }
+  if (/KSh|KES|shilling/i.test(value)) return value.replace(/^KES\s*/i, "KSh ");
+  return `KSh ${value.replace(/^\s+/, "")}`;
 }
 
 function formatMonth(value: Date | string) {
@@ -127,13 +153,13 @@ export default function Home() {
   const [savedEvents, setSavedEvents] = useState<string[]>([]);
   const [email, setEmail] = useState("");
 
-  const imageMap = useMemo(() => new Map((content?.images ?? []).map((image: ImageRow) => [image.name, image])), [content?.images]);
+  const imageMap = useMemo(() => new Map((content?.images ?? []).map((image: ImageRow) => [image.name, { ...image, imageUrl: resolveStudioImage(image.imageUrl) }])), [content?.images]);
   const media = (name: keyof typeof fallbackMedia) => imageMap.get(name)?.imageUrl ?? fallbackMedia[name];
   const mediaAlt = (name: keyof typeof fallbackMedia, fallback: string) => imageMap.get(name)?.altText ?? fallback;
-  const products = useMemo<Product[]>(() => content?.canvases?.length ? content.canvases.map((item) => ({ id: item.id, title: item.title, kind: item.kind, price: item.price, size: item.size, image: item.imageUrl, status: statusLabels[item.status] ?? item.status, description: item.description })) : fallbackProducts, [content?.canvases]);
+  const products = useMemo<Product[]>(() => content?.canvases?.length ? content.canvases.map((item) => ({ id: item.id, title: item.title, kind: item.kind, price: formatPrice(item.price), size: item.size, image: resolveStudioImage(item.imageUrl) ?? fallbackMedia.pink, status: statusLabels[item.status] ?? item.status, description: item.description })) : fallbackProducts, [content?.canvases]);
   const events = useMemo<EventItem[]>(() => content?.events?.length ? content.events.map((item) => ({ id: item.id, startAt: item.startAt, endAt: item.endAt, title: item.title, type: typeLabels[item.type] ?? item.type, venue: item.venue, city: item.city, time: `${asDate(item.startAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}—${asDate(item.endAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`, description: item.description, accent: item.accent })) : fallbackEvents, [content?.events]);
   const filteredEvents = useMemo(() => eventFilter === "All events" ? events : events.filter((event) => event.type === eventFilter), [eventFilter, events]);
-  const journal = useMemo<JournalItem[]>(() => content?.journal?.length ? content.journal.map((entry) => ({ id: entry.id, slug: entry.slug, date: new Date(entry.published_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase(), title: entry.title, category: entry.category, image: entry.image_url, copy: entry.excerpt, body: entry.body, altText: entry.alt_text })) : fallbackJournal.map((entry) => ({ ...entry, image: entry.image.startsWith("/manus-storage") ? media(entry.slug === "a-new-pink-orbit" ? "pink" : entry.slug === "what-happens-in-the-quiet" ? "maker" : "process") : entry.image })), [content?.journal, media]);
+  const journal = useMemo<JournalItem[]>(() => content?.journal?.length ? content.journal.map((entry) => ({ id: entry.id, slug: entry.slug, date: new Date(entry.published_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase(), title: entry.title, category: entry.category, image: resolveStudioImage(entry.image_url) ?? fallbackMedia.process, copy: entry.excerpt, body: entry.body, altText: entry.alt_text })) : fallbackJournal.map((entry) => ({ ...entry, image: resolveStudioImage(entry.image) ?? media(entry.slug === "a-new-pink-orbit" ? "pink" : entry.slug === "what-happens-in-the-quiet" ? "maker" : "process") })), [content?.journal, media]);
 
   const scrollTo = (id: string) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); };
   const toggleEvent = (title: string) => { const isSaved = savedEvents.includes(title); setSavedEvents((current) => isSaved ? current.filter((item) => item !== title) : [...current, title]); toast.success(isSaved ? "Event removed from your list." : "Event saved.", { description: "Use the calendar actions to save the date to your calendar." }); };

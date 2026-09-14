@@ -48,7 +48,7 @@ export const defaultAdminProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;
 
-    if (!ctx.user || ctx.user.role !== "admin" || ctx.user.isDefaultAdmin !== 1) {
+    if (!ctx.user || ctx.user.role !== "admin" || ctx.user.isApproved !== 1) {
       throw new TRPCError({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
     }
 
