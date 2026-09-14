@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { Seo, studioJsonLd } from "@/components/Seo";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 
 const fallbackMedia = {
   pink: "/manus-storage/pink-orbit_e98112f2.jpg",
@@ -141,6 +142,7 @@ export default function Home() {
   return (
     <main className="studio-app">
       <Seo title="Threaded Forms — Tehila's studio in Nairobi" description="Discover Tehila's contemporary string-art, textile wall pieces, studio journal, workshops, and upcoming events in Nairobi, Kenya." path="/" jsonLd={studioJsonLd()} />
+      <WhatsAppFloat />
       <header className="app-header">
         <a className="studio-logo" href="#home" onClick={() => scrollTo("home")}><span className="logo-mark"><CircleDot size={17} /></span><span><b>Threaded Forms</b><small>Tehila's studio</small></span></a>
         <nav className={`app-nav ${menuOpen ? "open" : ""}`}>{[["home", "Home"], ["story", "Story"], ["shop", "Shop"], ["events", "Events"], ["journal", "Journal"]].map(([id, label]) => <a key={id} href={`#${id}`} onClick={() => scrollTo(id)}>{label}</a>)}</nav>

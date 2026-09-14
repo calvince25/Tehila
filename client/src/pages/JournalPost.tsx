@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowUpRight, CircleDot, Instagram } from "lucide-react";
 import { useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Seo, SITE_URL } from "@/components/Seo";
+import WhatsAppFloat from "@/components/WhatsAppFloat";
 
 const fallbackPosts: Record<string, { title: string; category: string; published_at: string; image_url: string; alt_text: string; excerpt: string; body: string; author_name: string }> = {
   "the-line-is-never-really-straight": { title: "The line is never really straight", category: "Studio note", published_at: "2026-09-18T09:00:00+03:00", image_url: "/manus-storage/process-closeup_eccb9460.jpg", alt_text: "Close-up of thread and canvas in the studio", excerpt: "A few thoughts on letting the material lead instead of correcting every small turn.", body: "A few thoughts on letting the material lead instead of correcting every small turn.\n\nWhen I begin a canvas, I often think I am drawing a shape. After a while, the thread reminds me that it has its own movement. The most interesting turns are usually the ones I did not plan.\n\nThat is the quiet part of making: staying close enough to the work to notice when it wants to become something else.", author_name: "Tehila" },
@@ -29,6 +30,7 @@ export default function JournalPost() {
 
   return <main className="journal-post-page">
     <Seo title={title} description={description} path={canonicalPath} image={entry.image_url} type="article" jsonLd={articleSchema} />
+    <WhatsAppFloat />
     <header className="app-header"><a className="studio-logo" href="/"><span className="logo-mark"><CircleDot size={17} /></span><span><b>Threaded Forms</b><small>Tehila's studio</small></span></a><div className="header-right"><a className="header-instagram" href="https://www.instagram.com/t.ww2.k" target="_blank" rel="noreferrer"><Instagram size={17} /> <span>Follow along</span></a></div></header>
     <article className="journal-post"><a className="back-journal" href="/#journal"><ArrowLeft size={15} /> Back to journal</a><div className="journal-post-heading"><div className="journal-meta"><span>{entry.category}</span><span>{formatDate(entry.published_at)}</span></div><h1>{entry.title}</h1><p className="journal-post-excerpt">{entry.excerpt}</p><div className="journal-author">Written by {entry.author_name} · Threaded Forms Studio, Nairobi</div></div><img className="journal-post-image" src={entry.image_url} alt={entry.alt_text} /><div className="journal-post-body">{entry.body.split(/\n\s*\n/).map((paragraph: string) => <p key={paragraph}>{paragraph}</p>)}</div><div className="journal-post-footer"><a className="underlined-link" href="/#journal"><ArrowLeft size={15} /> More from the journal</a><a className="underlined-link" href="https://www.instagram.com/t.ww2.k" target="_blank" rel="noreferrer">Continue on Instagram <ArrowUpRight size={15} /></a></div></article>
     <footer className="app-footer"><a className="studio-logo" href="/"><span className="logo-mark"><CircleDot size={17} /></span><span><b>Threaded Forms</b><small>Tehila's studio</small></span></a><span>Made with thread, patience, and a little joy.</span></footer>
