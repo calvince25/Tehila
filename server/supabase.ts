@@ -51,7 +51,7 @@ export async function listCommissionEnquiries() { return supabaseRequest<Commiss
 export async function deleteCommissionEnquiry(id: number) { await supabaseRequest<CommissionEnquiry[]>(`commission_enquiries?id=eq.${id}`, { method: "DELETE" }, true); return id; }
 
 export async function subscribeToNewsletter(email: string) {
-  const rows = await supabaseRequest<NewsletterSubscriber[]>("newsletter_subscribers", { method: "POST", body: JSON.stringify({ email, source: "footer" }), headers: { Prefer: "return=representation,resolution=merge-duplicates" } });
+  const rows = await supabaseRequest<NewsletterSubscriber[]>("newsletter_subscribers", { method: "POST", body: JSON.stringify({ email, source: "footer" }), headers: { Prefer: "return=representation,resolution=merge-duplicates" } }, true);
   return rows[0] ?? { email };
 }
 export async function listNewsletterSubscribers() { return supabaseRequest<NewsletterSubscriber[]>("newsletter_subscribers?order=subscribed_at.desc", {}, true); }

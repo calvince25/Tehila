@@ -929,7 +929,7 @@ async function deleteCommissionEnquiry(id) {
   return id;
 }
 async function subscribeToNewsletter(email) {
-  const rows = await supabaseRequest("newsletter_subscribers", { method: "POST", body: JSON.stringify({ email, source: "footer" }), headers: { Prefer: "return=representation,resolution=merge-duplicates" } });
+  const rows = await supabaseRequest("newsletter_subscribers", { method: "POST", body: JSON.stringify({ email, source: "footer" }), headers: { Prefer: "return=representation,resolution=merge-duplicates" } }, true);
   return rows[0] ?? { email };
 }
 async function listNewsletterSubscribers() {
