@@ -10,6 +10,7 @@ function getSiteUrl(req: { protocol: string; get: (name: string) => string | und
 }
 
 export function registerSeoRoutes(app: Express) {
+  app.get(["/commission", "/commissions"], (_req, res) => res.redirect(301, "/contact"));
   app.get("/robots.txt", (req, res) => {
     const siteUrl = getSiteUrl(req);
     res.type("text/plain").send(`User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nSitemap: ${siteUrl}/sitemap.xml\n`);
@@ -17,7 +18,11 @@ export function registerSeoRoutes(app: Express) {
 
   app.get("/sitemap.xml", async (req, res) => {
     const siteUrl = getSiteUrl(req);
-    const urls = [{ loc: siteUrl + "/", lastmod: new Date().toISOString().slice(0, 10) }];
+    const today = new Date().toISOString().slice(0, 10);
+    const urls = [
+      { loc: siteUrl + "/", lastmod: today },
+      { loc: siteUrl + "/contact", lastmod: today },
+    ];
     try {
       const posts = await listPublishedJournalPosts();
       posts.forEach(post => urls.push({ loc: `${siteUrl}/journal/${encodeURIComponent(post.slug)}`, lastmod: post.updated_at.slice(0, 10) }));

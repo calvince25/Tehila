@@ -3,6 +3,10 @@
   "buildCommand": "pnpm build",
   "outputDirectory": "dist/public",
   "framework": null,
+  "redirects": [
+    { "source": "/commission", "destination": "/contact", "statusCode": 301 },
+    { "source": "/commissions", "destination": "/contact", "statusCode": 301 }
+  ],
   "rewrites": [
     { "source": "/manus-storage/:path*", "destination": "/api/storage?path=:path*" },
     { "source": "/api/(.*)", "destination": "/api" },

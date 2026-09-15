@@ -126,47 +126,47 @@
 .whatsapp-float:active { transform: scale(.97); }
 @media (max-width: 640px) { .whatsapp-float { right: 16px; bottom: 16px; width: 52px; height: 52px; min-height: 52px; padding: 0; justify-content: center; } .whatsapp-float span { display: none; } }
 
-/* Commission / enquiry page */
-.commission-page { min-height: 100vh; background: #f7f2e9; color: #1d2928; }
-.commission-header-link { color: #b4493f; border-bottom: 1px solid #b4493f; padding-bottom: 4px; text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: .1em; }
-.commission-hero { display: grid; grid-template-columns: 1fr .95fr; gap: clamp(45px, 9vw, 140px); align-items: center; padding: clamp(65px, 9vw, 125px) clamp(22px, 9vw, 145px) 120px; }
-.commission-hero-copy { max-width: 650px; }
-.commission-kicker { margin: 62px 0 0; color: #7b867c; font-size: 10px; font-weight: 800; letter-spacing: .14em; }
-.commission-hero h1 { margin: 22px 0 30px; font-size: clamp(64px, 8vw, 120px); }
-.commission-hero h1 em, .commission-enquiry h2 em { color: #b4493f; font-style: italic; }
-.commission-lead { max-width: 510px; color: #68746b; font-size: 18px; line-height: 1.7; }
-.commission-hero .primary-button { margin-top: 32px; }
-.commission-hero-art { position: relative; max-width: 500px; justify-self: center; transform: rotate(3deg); }
-.commission-hero-art img { width: 100%; aspect-ratio: .9 / 1.1; display: block; object-fit: cover; box-shadow: 22px 28px 70px rgba(46,39,34,.16); }
-.commission-hero-art span { position: absolute; right: -22px; bottom: 24px; padding: 15px 17px; color: #fff8f0; background: #1d2928; text-transform: uppercase; font-size: 9px; letter-spacing: .1em; line-height: 1.45; }
-.commission-process { padding: clamp(80px, 10vw, 135px) clamp(22px, 9vw, 145px); background: #e8ddd0; }
-.commission-process-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(24px, 5vw, 75px); margin-top: 62px; }
-.commission-process-grid article { border-top: 1px solid #b4493f; padding-top: 18px; }
-.commission-process-grid article > b { color: #b4493f; font-family: "DM Serif Display", Georgia, serif; font-size: 31px; font-weight: 400; }
-.commission-process-grid h2 { margin: 18px 0 14px; font-size: clamp(33px, 3vw, 49px); }
-.commission-process-grid p { max-width: 320px; color: #68746b; font-size: 14px; line-height: 1.75; }
-.commission-enquiry { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(45px, 9vw, 140px); padding: clamp(80px, 10vw, 135px) clamp(22px, 9vw, 145px); color: #f7f2e9; background: #1d2928; }
-.commission-enquiry-intro h2 { margin: 22px 0; font-size: clamp(62px, 7vw, 104px); }
-.commission-enquiry-intro > p { max-width: 360px; color: #b9c2b7; line-height: 1.75; font-size: 14px; }
-.commission-whatsapp-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 26px; color: #c9dbb8; border-bottom: 1px solid #8fa77c; padding-bottom: 5px; text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: .08em; }
-.commission-form { align-self: start; }
-.commission-form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 18px; }
-.commission-form label { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
-.commission-form label span { color: #aeb9ae; text-transform: uppercase; font-size: 9px; font-weight: 800; letter-spacing: .1em; }
-.commission-form input, .commission-form select, .commission-form textarea { width: 100%; border: 0; border-bottom: 1px solid rgba(247,242,233,.28); border-radius: 0; outline: 0; padding: 11px 0 13px; color: #f7f2e9; background: transparent; font-size: 14px; }
-.commission-form input:focus, .commission-form select:focus, .commission-form textarea:focus { border-color: #e5a18e; box-shadow: 0 1px 0 #e5a18e; }
-.commission-form select option { color: #1d2928; }
-.commission-form textarea { resize: vertical; line-height: 1.6; }
-.commission-form input::placeholder, .commission-form textarea::placeholder { color: #748177; }
-.commission-field-full { margin-top: 8px; }
-.commission-submit { display: inline-flex; align-items: center; gap: 9px; margin-top: 18px; padding: 14px 18px; color: #1d2928; background: #f7f2e9; text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: .09em; transition: transform .18s ease, background .18s ease; }
-.commission-submit:hover { background: #e5a18e; }
-.commission-submit:active { transform: scale(.97); }
-.commission-sent { display: flex; align-items: center; gap: 8px; color: #c9dbb8; font-size: 12px; line-height: 1.5; }
-@media (max-width: 900px) { .commission-hero, .commission-enquiry { grid-template-columns: 1fr; } .commission-hero-art { width: min(100%, 560px); margin-top: 10px; } .commission-process-grid { gap: 35px 20px; } }
-@media (max-width: 640px) { .commission-header-link { display: none; } .commission-hero { padding-top: 55px; padding-bottom: 80px; } .commission-kicker { margin-top: 50px; } .commission-process-grid { grid-template-columns: 1fr; margin-top: 40px; } .commission-form-grid { grid-template-columns: 1fr; } .commission-hero-art span { right: -8px; bottom: 14px; } }
+/* Contact / enquiry page */
+.contact-page { min-height: 100vh; background: #f7f2e9; color: #1d2928; }
+.contact-header-link { color: #b4493f; border-bottom: 1px solid #b4493f; padding-bottom: 4px; text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: .1em; }
+.contact-hero { display: grid; grid-template-columns: 1fr .95fr; gap: clamp(45px, 9vw, 140px); align-items: center; padding: clamp(65px, 9vw, 125px) clamp(22px, 9vw, 145px) 120px; }
+.contact-hero-copy { max-width: 650px; }
+.contact-kicker { margin: 62px 0 0; color: #7b867c; font-size: 10px; font-weight: 800; letter-spacing: .14em; }
+.contact-hero h1 { margin: 22px 0 30px; font-size: clamp(64px, 8vw, 120px); }
+.contact-hero h1 em, .contact-enquiry h2 em { color: #b4493f; font-style: italic; }
+.contact-lead { max-width: 510px; color: #68746b; font-size: 18px; line-height: 1.7; }
+.contact-hero .primary-button { margin-top: 32px; }
+.contact-hero-art { position: relative; max-width: 500px; justify-self: center; transform: rotate(3deg); }
+.contact-hero-art img { width: 100%; aspect-ratio: .9 / 1.1; display: block; object-fit: cover; box-shadow: 22px 28px 70px rgba(46,39,34,.16); }
+.contact-hero-art span { position: absolute; right: -22px; bottom: 24px; padding: 15px 17px; color: #fff8f0; background: #1d2928; text-transform: uppercase; font-size: 9px; letter-spacing: .1em; line-height: 1.45; }
+.contact-process { padding: clamp(80px, 10vw, 135px) clamp(22px, 9vw, 145px); background: #e8ddd0; }
+.contact-process-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(24px, 5vw, 75px); margin-top: 62px; }
+.contact-process-grid article { border-top: 1px solid #b4493f; padding-top: 18px; }
+.contact-process-grid article > b { color: #b4493f; font-family: "DM Serif Display", Georgia, serif; font-size: 31px; font-weight: 400; }
+.contact-process-grid h2 { margin: 18px 0 14px; font-size: clamp(33px, 3vw, 49px); }
+.contact-process-grid p { max-width: 320px; color: #68746b; font-size: 14px; line-height: 1.75; }
+.contact-enquiry { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(45px, 9vw, 140px); padding: clamp(80px, 10vw, 135px) clamp(22px, 9vw, 145px); color: #f7f2e9; background: #1d2928; }
+.contact-enquiry-intro h2 { margin: 22px 0; font-size: clamp(62px, 7vw, 104px); }
+.contact-enquiry-intro > p { max-width: 360px; color: #b9c2b7; line-height: 1.75; font-size: 14px; }
+.contact-whatsapp-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 26px; color: #c9dbb8; border-bottom: 1px solid #8fa77c; padding-bottom: 5px; text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: .08em; }
+.contact-form { align-self: start; }
+.contact-form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 18px; }
+.contact-form label { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.contact-form label span { color: #aeb9ae; text-transform: uppercase; font-size: 9px; font-weight: 800; letter-spacing: .1em; }
+.contact-form input, .contact-form select, .contact-form textarea { width: 100%; border: 0; border-bottom: 1px solid rgba(247,242,233,.28); border-radius: 0; outline: 0; padding: 11px 0 13px; color: #f7f2e9; background: transparent; font-size: 14px; }
+.contact-form input:focus, .contact-form select:focus, .contact-form textarea:focus { border-color: #e5a18e; box-shadow: 0 1px 0 #e5a18e; }
+.contact-form select option { color: #1d2928; }
+.contact-form textarea { resize: vertical; line-height: 1.6; }
+.contact-form input::placeholder, .contact-form textarea::placeholder { color: #748177; }
+.contact-field-full { margin-top: 8px; }
+.contact-submit { display: inline-flex; align-items: center; gap: 9px; margin-top: 18px; padding: 14px 18px; color: #1d2928; background: #f7f2e9; text-transform: uppercase; font-size: 10px; font-weight: 800; letter-spacing: .09em; transition: transform .18s ease, background .18s ease; }
+.contact-submit:hover { background: #e5a18e; }
+.contact-submit:active { transform: scale(.97); }
+.contact-sent { display: flex; align-items: center; gap: 8px; color: #c9dbb8; font-size: 12px; line-height: 1.5; }
+@media (max-width: 900px) { .contact-hero, .contact-enquiry { grid-template-columns: 1fr; } .contact-hero-art { width: min(100%, 560px); margin-top: 10px; } .contact-process-grid { gap: 35px 20px; } }
+@media (max-width: 640px) { .contact-header-link { display: none; } .contact-hero { padding-top: 55px; padding-bottom: 80px; } .contact-kicker { margin-top: 50px; } .contact-process-grid { grid-template-columns: 1fr; margin-top: 40px; } .contact-form-grid { grid-template-columns: 1fr; } .contact-hero-art span { right: -8px; bottom: 14px; } }
 
-/* CMS commission enquiries */
+/* CMS contact enquiries */
 .cms-enquiries-list { display: grid; gap: 1px; padding: 0; overflow: hidden; }
 .cms-enquiry-record { padding: 27px clamp(20px, 4vw, 38px); background: var(--card); border-bottom: 1px solid rgba(29,41,40,.1); }
 .cms-enquiry-heading { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
