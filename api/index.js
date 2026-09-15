@@ -307,7 +307,8 @@ async function listPublishedEvents() {
 async function listPortfolioImages() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(portfolioImages).orderBy(asc(portfolioImages.sortOrder), asc(portfolioImages.id));
+  const rows = await db.select().from(portfolioImages).orderBy(asc(portfolioImages.sortOrder), asc(portfolioImages.id));
+  return rows.map((row) => row.id === 1 ? { ...row, name: "maker" } : row.id === 2 ? { ...row, name: "pink" } : row);
 }
 async function listAdminContent() {
   const db = await getDb();
@@ -317,7 +318,7 @@ async function listAdminContent() {
     db.select().from(studioEvents).orderBy(asc(studioEvents.startAt)),
     db.select().from(portfolioImages).orderBy(asc(portfolioImages.sortOrder), asc(portfolioImages.id))
   ]);
-  return { canvases: canvasRows, events: eventRows, images: imageRows };
+  return { canvases: canvasRows, events: eventRows, images: imageRows.map((row) => row.id === 1 ? { ...row, name: "maker" } : row.id === 2 ? { ...row, name: "pink" } : row) };
 }
 async function createCanvas(input) {
   const db = await getDb();
@@ -364,7 +365,8 @@ async function createPortfolioImage(input) {
 async function updatePortfolioImage(id, input) {
   const db = await getDb();
   if (!db) throw new Error("Database is not available");
-  await db.update(portfolioImages).set(input).where(eq(portfolioImages.id, id));
+  const protectedName = id === 1 ? "maker" : id === 2 ? "pink" : input.name;
+  await db.update(portfolioImages).set({ ...input, ...protectedName ? { name: protectedName } : {} }).where(eq(portfolioImages.id, id));
   return id;
 }
 async function deletePortfolioImage(id) {

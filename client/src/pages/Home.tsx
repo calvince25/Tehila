@@ -36,10 +36,10 @@ const fallbackMedia = {
 type Product = { id?: number; title: string; kind: string; price: string; size: string; image: string; status: string; description: string };
 type EventItem = { id?: number; startAt: Date | string; endAt: Date | string; title: string; type: string; venue: string; city: string; time: string; description: string; accent: string };
 
-type ImageRow = { name: string; imageUrl: string; altText: string };
+type ImageRow = { id: number; name: string; imageUrl: string; altText: string; updatedAt?: string | Date };
 type JournalItem = { id?: number; slug: string; date: string; title: string; category: string; image: string; copy: string; body?: string; altText?: string };
 
-function resolveStudioImage(url: string | undefined) {
+function resolveStudioImage(url: string | undefined, updatedAt?: string | Date) {
   if (!url) return url;
   const legacyMap: Record<string, string> = {
     "pink-orbit_e98112f2.jpg": "/studio-assets/pink-orbit.jpg",
@@ -51,7 +51,9 @@ function resolveStudioImage(url: string | undefined) {
     "studio-grid_499fcdaf.jpg": "/studio-assets/studio-grid.jpg",
   };
   const key = url.split("/").pop() ?? "";
-  return legacyMap[key] ?? url;
+  const resolved = legacyMap[key] ?? url;
+  if (!resolved || resolved.startsWith("/studio-assets/") || !updatedAt) return resolved;
+  return `${resolved}${resolved.includes("?") ? "&" : "?"}v=${encodeURIComponent(new Date(updatedAt).getTime())}`;
 }
 
 const fallbackProducts: Product[] = [
@@ -176,10 +178,10 @@ export default function Home() {
     }
   }
 
-  const imageMap = useMemo(() => new Map((content?.images ?? []).map((image: ImageRow) => [image.name, { ...image, imageUrl: resolveStudioImage(image.imageUrl) }])), [content?.images]);
+  const imageMap = useMemo(() => new Map((content?.images ?? []).map((image: ImageRow) => [image.name, { ...image, imageUrl: resolveStudioImage(image.imageUrl, image.updatedAt) }])), [content?.images]);
   const media = (name: keyof typeof fallbackMedia) => imageMap.get(name)?.imageUrl ?? fallbackMedia[name];
   const mediaAlt = (name: keyof typeof fallbackMedia, fallback: string) => imageMap.get(name)?.altText ?? fallback;
-  const products = useMemo<Product[]>(() => content?.canvases?.length ? content.canvases.map((item) => ({ id: item.id, title: item.title, kind: item.kind, price: formatPrice(item.price), size: item.size, image: resolveStudioImage(item.imageUrl) ?? fallbackMedia.pink, status: statusLabels[item.status] ?? item.status, description: item.description })) : fallbackProducts, [content?.canvases]);
+  const products = useMemo<Product[]>(() => content?.canvases?.length ? content.canvases.map((item) => ({ id: item.id, title: item.title, kind: item.kind, price: formatPrice(item.price), size: item.size, image: resolveStudioImage(item.imageUrl, item.updatedAt) ?? fallbackMedia.pink, status: statusLabels[item.status] ?? item.status, description: item.description })) : fallbackProducts, [content?.canvases]);
   const events = useMemo<EventItem[]>(() => content?.events?.length ? content.events.map((item) => ({ id: item.id, startAt: item.startAt, endAt: item.endAt, title: item.title, type: typeLabels[item.type] ?? item.type, venue: item.venue, city: item.city, time: `${asDate(item.startAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}—${asDate(item.endAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`, description: item.description, accent: item.accent })) : fallbackEvents, [content?.events]);
   const filteredEvents = useMemo(() => eventFilter === "All events" ? events : events.filter((event) => event.type === eventFilter), [eventFilter, events]);
   const journal = useMemo<JournalItem[]>(() => content?.journal?.length ? content.journal.map((entry) => ({ id: entry.id, slug: entry.slug, date: new Date(entry.published_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase(), title: entry.title, category: entry.category, image: resolveStudioImage(entry.image_url) ?? fallbackMedia.process, copy: entry.excerpt, body: entry.body, altText: entry.alt_text })) : fallbackJournal.map((entry) => ({ ...entry, image: resolveStudioImage(entry.image) ?? media(entry.slug === "a-new-pink-orbit" ? "pink" : entry.slug === "what-happens-in-the-quiet" ? "maker" : "process") })), [content?.journal, media]);

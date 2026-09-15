@@ -136,7 +136,8 @@ export async function listPublishedEvents() {
 export async function listPortfolioImages() {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(portfolioImages).orderBy(asc(portfolioImages.sortOrder), asc(portfolioImages.id));
+  const rows = await db.select().from(portfolioImages).orderBy(asc(portfolioImages.sortOrder), asc(portfolioImages.id));
+  return rows.map((row) => row.id === 1 ? { ...row, name: "maker" } : row.id === 2 ? { ...row, name: "pink" } : row);
 }
 
 export async function listAdminContent() {
@@ -147,7 +148,7 @@ export async function listAdminContent() {
     db.select().from(studioEvents).orderBy(asc(studioEvents.startAt)),
     db.select().from(portfolioImages).orderBy(asc(portfolioImages.sortOrder), asc(portfolioImages.id)),
   ]);
-  return { canvases: canvasRows, events: eventRows, images: imageRows };
+  return { canvases: canvasRows, events: eventRows, images: imageRows.map((row) => row.id === 1 ? { ...row, name: "maker" } : row.id === 2 ? { ...row, name: "pink" } : row) };
 }
 
 export async function createCanvas(input: InsertCanvas) { const db = await getDb(); if (!db) throw new Error("Database is not available"); const result = await db.insert(canvases).values(input); return Number(result[0].insertId); }
@@ -157,7 +158,7 @@ export async function createStudioEvent(input: InsertStudioEvent) { const db = a
 export async function updateStudioEvent(id: number, input: Partial<InsertStudioEvent>) { const db = await getDb(); if (!db) throw new Error("Database is not available"); await db.update(studioEvents).set(input).where(eq(studioEvents.id, id)); return id; }
 export async function deleteStudioEvent(id: number) { const db = await getDb(); if (!db) throw new Error("Database is not available"); await db.delete(studioEvents).where(eq(studioEvents.id, id)); return id; }
 export async function createPortfolioImage(input: InsertPortfolioImage) { const db = await getDb(); if (!db) throw new Error("Database is not available"); const result = await db.insert(portfolioImages).values(input); return Number(result[0].insertId); }
-export async function updatePortfolioImage(id: number, input: Partial<InsertPortfolioImage>) { const db = await getDb(); if (!db) throw new Error("Database is not available"); await db.update(portfolioImages).set(input).where(eq(portfolioImages.id, id)); return id; }
+export async function updatePortfolioImage(id: number, input: Partial<InsertPortfolioImage>) { const db = await getDb(); if (!db) throw new Error("Database is not available"); const protectedName = id === 1 ? "maker" : id === 2 ? "pink" : input.name; await db.update(portfolioImages).set({ ...input, ...(protectedName ? { name: protectedName } : {}) }).where(eq(portfolioImages.id, id)); return id; }
 export async function deletePortfolioImage(id: number) { const db = await getDb(); if (!db) throw new Error("Database is not available"); await db.delete(portfolioImages).where(eq(portfolioImages.id, id)); return id; }
 
 export async function createOrder(input: InsertOrder) {

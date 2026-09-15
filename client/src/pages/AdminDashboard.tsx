@@ -140,7 +140,7 @@ function AdminDashboardInner({ user }: { user: { role: "admin" | "user"; isDefau
       const uploaded = await maybeUpload(canvasFile);
       const dataToSave = { ...canvasForm, imageUrl: uploaded?.url ?? canvasForm.imageUrl, imageKey: uploaded?.key ?? (canvasForm.imageKey || null) };
       if (!dataToSave.imageUrl) throw new Error("Choose an image before saving this canvas.");
-      if (editingCanvas) updateCanvas.mutate({ id: editingCanvas, data: dataToSave }); else createCanvas.mutate(dataToSave);
+      if (editingCanvas) await updateCanvas.mutateAsync({ id: editingCanvas, data: dataToSave }); else await createCanvas.mutateAsync(dataToSave);
     } catch (error) { toast.error(error instanceof Error ? error.message : "Could not save the canvas."); }
   }
 
@@ -157,7 +157,7 @@ function AdminDashboardInner({ user }: { user: { role: "admin" | "user"; isDefau
       const uploaded = await maybeUpload(imageFile);
       const dataToSave = { ...imageForm, imageUrl: uploaded?.url ?? imageForm.imageUrl, imageKey: uploaded?.key ?? (imageForm.imageKey || null) };
       if (!dataToSave.imageUrl) throw new Error("Choose an image before saving this record.");
-      if (editingImage) updateImage.mutate({ id: editingImage, data: dataToSave }); else createImage.mutate(dataToSave);
+      if (editingImage) await updateImage.mutateAsync({ id: editingImage, data: dataToSave }); else await createImage.mutateAsync(dataToSave);
     } catch (error) { toast.error(error instanceof Error ? error.message : "Could not save the image."); }
   }
 
