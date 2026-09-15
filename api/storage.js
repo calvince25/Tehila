@@ -1,6 +1,9 @@
 // server/vercel-storage.ts
 import "dotenv/config";
 async function storageHandler(req, res) {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
   const key = typeof req.query.path === "string" ? req.query.path : "";
   const forgeBase = (process.env.BUILT_IN_FORGE_API_URL || "").replace(/\/+$/, "");
   const forgeKey = process.env.BUILT_IN_FORGE_API_KEY;

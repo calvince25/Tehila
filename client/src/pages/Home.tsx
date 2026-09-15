@@ -190,7 +190,7 @@ export default function Home() {
 
   return (
     <main className="studio-app">
-      <Seo title="Threaded Forms — Tehila's studio in Nairobi" description="Discover Tehila's contemporary string-art, textile wall pieces, studio journal, workshops, and upcoming events in Nairobi, Kenya." path="/" image="/studio-preview.jpg" jsonLd={studioJsonLd()} />
+      <Seo title="Threaded Forms — Tehila's studio in Nairobi" description="Discover Tehila's contemporary string-art, textile wall pieces, studio journal, workshops, and upcoming events in Nairobi, Kenya." path="/" jsonLd={studioJsonLd()} />
       <WhatsAppFloat />
       <header className="app-header">
         <a className="studio-logo" href="#home" onClick={() => scrollTo("home")}><span className="logo-mark"><CircleDot size={17} /></span><span><b>Threaded Forms</b><small>Tehila's studio</small></span></a>

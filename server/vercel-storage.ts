@@ -1,8 +1,11 @@
 import "dotenv/config";
 type VercelRequest = { query: Record<string, string | string[] | undefined> };
-type VercelResponse = { status: (code: number) => VercelResponse; send: (body: string) => VercelResponse; redirect: (code: number, url: string) => VercelResponse };
+type VercelResponse = { setHeader: (name: string, value: string) => void; status: (code: number) => VercelResponse; send: (body: string) => VercelResponse; redirect: (code: number, url: string) => VercelResponse };
 
 export default async function storageHandler(req: VercelRequest, res: VercelResponse) {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
   const key = typeof req.query.path === "string" ? req.query.path : "";
   const forgeBase = (process.env.BUILT_IN_FORGE_API_URL || "").replace(/\/+$/, "");
   const forgeKey = process.env.BUILT_IN_FORGE_API_KEY;
