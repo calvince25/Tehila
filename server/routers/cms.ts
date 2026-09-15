@@ -24,7 +24,10 @@ import {
   deleteCommissionEnquiry,
   listCommissionEnquiries,
   listAdminJournalPosts,
+  listNewsletterSubscribers,
   listPublishedJournalPosts,
+  deleteNewsletterSubscriber,
+  subscribeToNewsletter,
   updateJournalPost,
 } from "../supabase";
 import { adminProcedure, publicProcedure, router } from "../_core/trpc";
@@ -109,6 +112,7 @@ export const contentRouter = router({
     timeline: z.string().max(180).optional().nullable(),
     message: z.string().min(1).max(5000),
   })).mutation(({ input }) => createCommissionEnquiry({ ...input, room: input.room ?? null, size: input.size ?? null, budget: input.budget ?? null, timeline: input.timeline ?? null })),
+  subscribeNewsletter: publicProcedure.input(z.object({ email: z.string().trim().email().max(320) })).mutation(({ input }) => subscribeToNewsletter(input.email.toLowerCase())),
 });
 
 export const cmsRouter = router({
@@ -122,6 +126,8 @@ export const cmsRouter = router({
     return { ...local, journal, enquiries };
   }),
   deleteEnquiry: adminProcedure.input(z.object({ id: z.number().int() })).mutation(({ input }) => deleteCommissionEnquiry(input.id)),
+  subscribers: adminProcedure.query(() => listNewsletterSubscribers()),
+  deleteSubscriber: adminProcedure.input(z.object({ id: z.number().int() })).mutation(({ input }) => deleteNewsletterSubscriber(input.id)),
 
   uploadImage: adminProcedure.input(uploadInput).mutation(async ({ input, ctx }) => {
     if (input.data.length > 8_000_000) {

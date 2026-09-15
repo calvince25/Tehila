@@ -149,6 +149,7 @@ function downloadAppleCalendar(event: EventItem) {
 
 export default function Home() {
   const { data: content } = trpc.content.all.useQuery();
+  const subscribeNewsletter = trpc.content.subscribeNewsletter.useMutation();
   const [, setLocation] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
@@ -185,11 +186,11 @@ export default function Home() {
 
   const scrollTo = (id: string) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); setMenuOpen(false); };
   const toggleEvent = (title: string) => { const isSaved = savedEvents.includes(title); setSavedEvents((current) => isSaved ? current.filter((item) => item !== title) : [...current, title]); toast.success(isSaved ? "Event removed from your list." : "Event saved.", { description: "Use the calendar actions to save the date to your calendar." }); };
-  const subscribe = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); if (!email) return; toast.success("You’re on the studio list.", { description: "New work and event notes will arrive here." }); setEmail(""); };
+  const subscribe = async (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); if (!email) return; try { await subscribeNewsletter.mutateAsync({ email }); toast.success("You’re on the studio list.", { description: "New work and event notes will arrive here." }); setEmail(""); } catch (error) { toast.error(error instanceof Error ? error.message : "Could not save your email. Please try again."); } };
 
   return (
     <main className="studio-app">
-      <Seo title="Threaded Forms — Tehila's studio in Nairobi" description="Discover Tehila's contemporary string-art, textile wall pieces, studio journal, workshops, and upcoming events in Nairobi, Kenya." path="/" jsonLd={studioJsonLd()} />
+      <Seo title="Threaded Forms — Tehila's studio in Nairobi" description="Discover Tehila's contemporary string-art, textile wall pieces, studio journal, workshops, and upcoming events in Nairobi, Kenya." path="/" image="/studio-preview.jpg" jsonLd={studioJsonLd()} />
       <WhatsAppFloat />
       <header className="app-header">
         <a className="studio-logo" href="#home" onClick={() => scrollTo("home")}><span className="logo-mark"><CircleDot size={17} /></span><span><b>Threaded Forms</b><small>Tehila's studio</small></span></a>
@@ -212,7 +213,7 @@ export default function Home() {
 
       <section className="journal-section app-section" id="journal"><div className="section-topline"><div><div className="section-kicker"><span className="kicker-line" /> 04 / From the journal</div><h2>Small notes<br /><em>from the making.</em></h2></div><a className="underlined-link" href="https://www.instagram.com/t.ww2.k" target="_blank" rel="noreferrer">More on Instagram <ExternalLink size={15} /></a></div><div className="journal-grid">{journal.map((entry) => <article className="journal-card" key={entry.slug}><a href={`/journal/${entry.slug}`}><img src={entry.image} alt={entry.altText ?? entry.title} /><div className="journal-meta"><span>{entry.category}</span><span>{entry.date}</span></div><h3>{entry.title}</h3><p>{entry.copy}</p><span className="journal-read">Read note <ArrowRight size={15} /></span></a></article>)}</div></section>
 
-      <section className="contact-section" id="contact"><div className="contact-copy"><div className="section-kicker light-kicker"><span className="kicker-line" /> Keep in touch</div><h2>Come back<br /><em>soon?</em></h2><p>Join the studio list for new work, events, and the occasional note from the table. No noise, just the good stuff.</p><a href="mailto:hello@threadedforms.studio" className="email-link">hello@threadedforms.studio <ArrowUpRight size={16} /></a></div><form className="signup-form" onSubmit={subscribe}><label htmlFor="studio-email">Your email address</label><div className="signup-line"><input id="studio-email" value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="you@example.com" required /><button type="submit" aria-label="Join the studio list"><ArrowRight size={19} /></button></div><span>By joining, you’re saying yes to a small, thoughtful inbox.</span></form></section>
+      <section className="contact-section" id="contact"><div className="contact-copy"><div className="section-kicker light-kicker"><span className="kicker-line" /> Keep in touch</div><h2>Come back<br /><em>soon?</em></h2><p>Join the studio list for new work, events, and the occasional note from the table. No noise, just the good stuff.</p><a href="mailto:hello@threadedforms.studio" className="email-link">hello@threadedforms.studio <ArrowUpRight size={16} /></a></div><form className="signup-form" onSubmit={subscribe}><label htmlFor="studio-email">Your email address</label><div className="signup-line"><input id="studio-email" value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="you@example.com" required /><button type="submit" aria-label="Join the studio list" disabled={subscribeNewsletter.isPending}><ArrowRight size={19} /></button></div><span>By joining, you’re saying yes to a small, thoughtful inbox.</span></form></section>
 
       <footer className="app-footer"><div className="footer-brand"><a className="studio-logo" href="#home"><span className="logo-mark"><CircleDot size={17} /></span><span><b>Threaded Forms</b><small>Tehila's studio</small></span></a><p>Made with thread, patience, and a little joy.</p></div><div className="footer-actions"><a href="https://www.instagram.com/t.ww2.k" target="_blank" rel="noreferrer"><Instagram size={16} /> Instagram</a><a href="mailto:hello@threadedforms.studio">Email <ArrowUpRight size={14} /></a><a href="/commission">Commissions <ArrowUpRight size={14} /></a></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Threaded Forms. All rights reserved.</span><a className="growthlab-credit" href="https://www.growthlab.co.ke" target="_blank" rel="noreferrer">Designed by Growthlab <ArrowUpRight size={14} /></a></div></footer>
 

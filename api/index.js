@@ -926,6 +926,17 @@ async function deleteCommissionEnquiry(id) {
   await supabaseRequest(`commission_enquiries?id=eq.${id}`, { method: "DELETE" }, true);
   return id;
 }
+async function subscribeToNewsletter(email) {
+  const rows = await supabaseRequest("newsletter_subscribers", { method: "POST", body: JSON.stringify({ email, source: "footer" }), headers: { Prefer: "return=representation,resolution=merge-duplicates" } });
+  return rows[0] ?? { email };
+}
+async function listNewsletterSubscribers() {
+  return supabaseRequest("newsletter_subscribers?order=subscribed_at.desc", {}, true);
+}
+async function deleteNewsletterSubscriber(id) {
+  await supabaseRequest(`newsletter_subscribers?id=eq.${id}`, { method: "DELETE" }, true);
+  return id;
+}
 
 // server/routers/cms.ts
 var statusSchema = z2.enum(["available", "one_of_one", "reserved", "coming_soon", "sold"]);
@@ -1001,7 +1012,8 @@ var contentRouter = router({
     budget: z2.string().max(120).optional().nullable(),
     timeline: z2.string().max(180).optional().nullable(),
     message: z2.string().min(1).max(5e3)
-  })).mutation(({ input }) => createCommissionEnquiry({ ...input, room: input.room ?? null, size: input.size ?? null, budget: input.budget ?? null, timeline: input.timeline ?? null }))
+  })).mutation(({ input }) => createCommissionEnquiry({ ...input, room: input.room ?? null, size: input.size ?? null, budget: input.budget ?? null, timeline: input.timeline ?? null })),
+  subscribeNewsletter: publicProcedure.input(z2.object({ email: z2.string().trim().email().max(320) })).mutation(({ input }) => subscribeToNewsletter(input.email.toLowerCase()))
 });
 var cmsRouter = router({
   adminCheck: adminProcedure.query(() => ({ allowed: true })),
@@ -1020,6 +1032,8 @@ var cmsRouter = router({
     return { ...local, journal, enquiries };
   }),
   deleteEnquiry: adminProcedure.input(z2.object({ id: z2.number().int() })).mutation(({ input }) => deleteCommissionEnquiry(input.id)),
+  subscribers: adminProcedure.query(() => listNewsletterSubscribers()),
+  deleteSubscriber: adminProcedure.input(z2.object({ id: z2.number().int() })).mutation(({ input }) => deleteNewsletterSubscriber(input.id)),
   uploadImage: adminProcedure.input(uploadInput).mutation(async ({ input, ctx }) => {
     if (input.data.length > 8e6) {
       throw new TRPCError3({ code: "BAD_REQUEST", message: "Please upload an image smaller than 6 MB." });

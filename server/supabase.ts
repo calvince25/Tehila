@@ -4,6 +4,7 @@ type JournalInput = Omit<JournalPost, "id" | "updated_at"> & { updated_at?: stri
 type SupabaseError = { message?: string; hint?: string; details?: string };
 export type CommissionEnquiry = { id: number; created_at: string; name: string; email: string; project_type: string; room: string | null; size: string | null; budget: string | null; timeline: string | null; message: string; status: string };
 export type CommissionEnquiryInput = Omit<CommissionEnquiry, "id" | "created_at" | "status">;
+export type NewsletterSubscriber = { id: number; email: string; subscribed_at: string; source: string };
 
 function getConfig() {
   const url = process.env.SUPABASE_URL;
@@ -48,5 +49,12 @@ export async function createCommissionEnquiry(input: CommissionEnquiryInput) {
 }
 export async function listCommissionEnquiries() { return supabaseRequest<CommissionEnquiry[]>("commission_enquiries?order=created_at.desc", {}, true); }
 export async function deleteCommissionEnquiry(id: number) { await supabaseRequest<CommissionEnquiry[]>(`commission_enquiries?id=eq.${id}`, { method: "DELETE" }, true); return id; }
+
+export async function subscribeToNewsletter(email: string) {
+  const rows = await supabaseRequest<NewsletterSubscriber[]>("newsletter_subscribers", { method: "POST", body: JSON.stringify({ email, source: "footer" }), headers: { Prefer: "return=representation,resolution=merge-duplicates" } });
+  return rows[0] ?? { email };
+}
+export async function listNewsletterSubscribers() { return supabaseRequest<NewsletterSubscriber[]>("newsletter_subscribers?order=subscribed_at.desc", {}, true); }
+export async function deleteNewsletterSubscriber(id: number) { await supabaseRequest<NewsletterSubscriber[]>(`newsletter_subscribers?id=eq.${id}`, { method: "DELETE" }, true); return id; }
 
 export { getConfig as getSupabaseConfig };

@@ -27,6 +27,7 @@ function Router() {
       <Route path="/admin/images" component={AdminDashboard} />
       <Route path="/admin/enquiries" component={AdminDashboard} />
       <Route path="/admin/orders" component={AdminDashboard} />
+      <Route path="/admin/subscribers" component={AdminDashboard} />
       <Route path="/admin/users" component={AdminDashboard} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

@@ -20,7 +20,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { useIsMobile } from "@/hooks/useMobile";
-import { CalendarDays, FileText, Image, Inbox, LayoutDashboard, LogOut, PanelLeft, Palette, ShoppingBag, Users } from "lucide-react";
+import { CalendarDays, FileText, Image, Inbox, LayoutDashboard, LogOut, Mail, PanelLeft, Palette, ShoppingBag, Users } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -34,6 +34,7 @@ const menuItems = [
   { icon: Image, label: "Portfolio images", path: "/admin/images" },
   { icon: Inbox, label: "Enquiries", path: "/admin/enquiries" },
   { icon: ShoppingBag, label: "Orders", path: "/admin/orders" },
+  { icon: Mail, label: "Subscribers", path: "/admin/subscribers" },
   { icon: Users, label: "Users", path: "/admin/users" },
 ];
 
