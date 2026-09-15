@@ -1,0 +1,1 @@
+ALTER TABLE `canvases` MODIFY COLUMN `status` enum('available','one_of_one','reserved','coming_soon','sold') NOT NULL DEFAULT 'available';

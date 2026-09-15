@@ -9,12 +9,14 @@ import Home from "./pages/Home";
 import JournalPost from "./pages/JournalPost";
 import Commission from "./pages/Commission";
 import AuthPage from "./pages/AuthPage";
+import Checkout from "./pages/Checkout";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/commission" component={Commission} />
+      <Route path="/checkout" component={Checkout} />
       <Route path="/login"><AuthPage mode="login" /></Route>
       <Route path="/register"><AuthPage mode="register" /></Route>
       <Route path="/journal/:slug" component={JournalPost} />
@@ -24,6 +26,7 @@ function Router() {
       <Route path="/admin/journal" component={AdminDashboard} />
       <Route path="/admin/images" component={AdminDashboard} />
       <Route path="/admin/enquiries" component={AdminDashboard} />
+      <Route path="/admin/orders" component={AdminDashboard} />
       <Route path="/admin/users" component={AdminDashboard} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

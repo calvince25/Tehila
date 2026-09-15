@@ -146,7 +146,7 @@ var canvases = mysqlTable("canvases", {
   kind: varchar("kind", { length: 120 }).notNull(),
   price: varchar("price", { length: 40 }).notNull(),
   size: varchar("size", { length: 80 }).notNull(),
-  status: mysqlEnum("status", ["available", "one_of_one", "coming_soon", "sold"]).default("available").notNull(),
+  status: mysqlEnum("status", ["available", "one_of_one", "reserved", "coming_soon", "sold"]).default("available").notNull(),
   description: text("description").notNull(),
   imageUrl: text("imageUrl").notNull(),
   imageKey: varchar("imageKey", { length: 512 }),
@@ -176,6 +176,22 @@ var portfolioImages = mysqlTable("portfolioImages", {
   imageUrl: text("imageUrl").notNull(),
   imageKey: varchar("imageKey", { length: 512 }),
   sortOrder: int("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
+});
+var orders = mysqlTable("orders", {
+  id: int("id").autoincrement().primaryKey(),
+  reference: varchar("reference", { length: 40 }).notNull().unique(),
+  customerName: varchar("customerName", { length: 160 }).notNull(),
+  phone: varchar("phone", { length: 40 }).notNull(),
+  email: varchar("email", { length: 320 }),
+  deliveryMethod: varchar("deliveryMethod", { length: 80 }).notNull(),
+  area: varchar("area", { length: 180 }).notNull(),
+  address: text("address").notNull(),
+  notes: text("notes"),
+  items: text("items").notNull(),
+  subtotal: varchar("subtotal", { length: 40 }).notNull(),
+  status: varchar("status", { length: 40 }).default("new_enquiry").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull()
 });
@@ -355,6 +371,39 @@ async function deletePortfolioImage(id) {
   const db = await getDb();
   if (!db) throw new Error("Database is not available");
   await db.delete(portfolioImages).where(eq(portfolioImages.id, id));
+  return id;
+}
+async function createOrder(input) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.insert(orders).values(input);
+  return input.reference;
+}
+async function listOrders() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(orders).orderBy(desc(orders.createdAt));
+}
+async function updateOrderStatus(id, status) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const existing = await db.select({ items: orders.items }).from(orders).where(eq(orders.id, id)).limit(1);
+  await db.update(orders).set({ status }).where(eq(orders.id, id));
+  let items = [];
+  try {
+    items = existing[0]?.items ? JSON.parse(existing[0].items) : [];
+  } catch {
+  }
+  const canvasStatus = status === "reserved" ? "reserved" : status === "sold" ? "sold" : status === "cancelled" ? "available" : null;
+  if (canvasStatus) {
+    await Promise.all(items.filter((item) => item.id).map((item) => db.update(canvases).set({ status: canvasStatus }).where(eq(canvases.id, item.id))));
+  }
+  return id;
+}
+async function deleteOrder(id) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.delete(orders).where(eq(orders.id, id));
   return id;
 }
 
@@ -879,7 +928,7 @@ async function deleteCommissionEnquiry(id) {
 }
 
 // server/routers/cms.ts
-var statusSchema = z2.enum(["available", "one_of_one", "coming_soon", "sold"]);
+var statusSchema = z2.enum(["available", "one_of_one", "reserved", "coming_soon", "sold"]);
 var eventTypeSchema = z2.enum(["studio_visit", "group_exhibition", "workshop"]);
 var accentSchema = z2.enum(["coral", "sage", "plum"]);
 var canvasFields = {
@@ -1085,6 +1134,26 @@ var appRouter = router({
     list: adminProcedure.query(() => listAdminUsers()),
     approve: defaultAdminProcedure.input(z3.object({ id: z3.number().int(), isApproved: z3.number().int().min(0).max(1) })).mutation(({ input }) => setUserApproval(input.id, input.isApproved)),
     delete: defaultAdminProcedure.input(z3.object({ id: z3.number().int() })).mutation(({ input }) => deleteUserAccount(input.id))
+  }),
+  orders: router({
+    create: publicProcedure.input(z3.object({
+      customerName: z3.string().trim().min(2).max(160),
+      phone: z3.string().trim().min(7).max(40),
+      email: z3.string().trim().email().max(320).optional().or(z3.literal("")),
+      deliveryMethod: z3.enum(["Pick-up Mtaani", "Delivery elsewhere in Kenya", "Studio pickup"]),
+      area: z3.string().trim().min(2).max(180),
+      address: z3.string().trim().min(5).max(5e3),
+      notes: z3.string().max(2e3).optional(),
+      items: z3.array(z3.object({ id: z3.number().int().optional(), title: z3.string().min(1).max(180), size: z3.string().max(80), price: z3.string().max(40), quantity: z3.number().int().min(1).max(10) })).min(1).max(20),
+      subtotal: z3.string().min(1).max(40)
+    })).mutation(async ({ input }) => {
+      const reference = `TF-${(/* @__PURE__ */ new Date()).toISOString().slice(0, 10).replaceAll("-", "")}-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
+      await createOrder({ ...input, email: input.email || null, notes: input.notes || null, items: JSON.stringify(input.items), reference, status: "new_enquiry" });
+      return { reference };
+    }),
+    list: adminProcedure.query(() => listOrders()),
+    updateStatus: adminProcedure.input(z3.object({ id: z3.number().int(), status: z3.enum(["new_enquiry", "awaiting_confirmation", "reserved", "payment_pending", "paid", "preparing", "ready_for_pickup", "dispatched", "delivered", "cancelled"]) })).mutation(({ input }) => updateOrderStatus(input.id, input.status)),
+    delete: adminProcedure.input(z3.object({ id: z3.number().int() })).mutation(({ input }) => deleteOrder(input.id))
   }),
   content: contentRouter,
   cms: cmsRouter

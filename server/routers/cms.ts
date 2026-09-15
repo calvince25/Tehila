@@ -29,7 +29,7 @@ import {
 } from "../supabase";
 import { adminProcedure, publicProcedure, router } from "../_core/trpc";
 
-const statusSchema = z.enum(["available", "one_of_one", "coming_soon", "sold"]);
+const statusSchema = z.enum(["available", "one_of_one", "reserved", "coming_soon", "sold"]);
 const eventTypeSchema = z.enum(["studio_visit", "group_exhibition", "workshop"]);
 const accentSchema = z.enum(["coral", "sage", "plum"]);
 

@@ -21,7 +21,7 @@ export const canvases = mysqlTable("canvases", {
   kind: varchar("kind", { length: 120 }).notNull(),
   price: varchar("price", { length: 40 }).notNull(),
   size: varchar("size", { length: 80 }).notNull(),
-  status: mysqlEnum("status", ["available", "one_of_one", "coming_soon", "sold"]).default("available").notNull(),
+  status: mysqlEnum("status", ["available", "one_of_one", "reserved", "coming_soon", "sold"]).default("available").notNull(),
   description: text("description").notNull(),
   imageUrl: text("imageUrl").notNull(),
   imageKey: varchar("imageKey", { length: 512 }),
@@ -57,6 +57,23 @@ export const portfolioImages = mysqlTable("portfolioImages", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
+export const orders = mysqlTable("orders", {
+  id: int("id").autoincrement().primaryKey(),
+  reference: varchar("reference", { length: 40 }).notNull().unique(),
+  customerName: varchar("customerName", { length: 160 }).notNull(),
+  phone: varchar("phone", { length: 40 }).notNull(),
+  email: varchar("email", { length: 320 }),
+  deliveryMethod: varchar("deliveryMethod", { length: 80 }).notNull(),
+  area: varchar("area", { length: 180 }).notNull(),
+  address: text("address").notNull(),
+  notes: text("notes"),
+  items: text("items").notNull(),
+  subtotal: varchar("subtotal", { length: 40 }).notNull(),
+  status: varchar("status", { length: 40 }).default("new_enquiry").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Canvas = typeof canvases.$inferSelect;
@@ -65,3 +82,5 @@ export type StudioEvent = typeof studioEvents.$inferSelect;
 export type InsertStudioEvent = typeof studioEvents.$inferInsert;
 export type PortfolioImage = typeof portfolioImages.$inferSelect;
 export type InsertPortfolioImage = typeof portfolioImages.$inferInsert;
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = typeof orders.$inferInsert;

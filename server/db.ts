@@ -3,10 +3,12 @@ import { drizzle } from "drizzle-orm/mysql2";
 import {
   canvases,
   InsertCanvas,
+  InsertOrder,
   InsertPortfolioImage,
   InsertStudioEvent,
   InsertUser,
   portfolioImages,
+  orders,
   studioEvents,
   users,
 } from "../drizzle/schema";
@@ -157,3 +159,34 @@ export async function deleteStudioEvent(id: number) { const db = await getDb(); 
 export async function createPortfolioImage(input: InsertPortfolioImage) { const db = await getDb(); if (!db) throw new Error("Database is not available"); const result = await db.insert(portfolioImages).values(input); return Number(result[0].insertId); }
 export async function updatePortfolioImage(id: number, input: Partial<InsertPortfolioImage>) { const db = await getDb(); if (!db) throw new Error("Database is not available"); await db.update(portfolioImages).set(input).where(eq(portfolioImages.id, id)); return id; }
 export async function deletePortfolioImage(id: number) { const db = await getDb(); if (!db) throw new Error("Database is not available"); await db.delete(portfolioImages).where(eq(portfolioImages.id, id)); return id; }
+
+export async function createOrder(input: InsertOrder) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.insert(orders).values(input);
+  return input.reference;
+}
+export async function listOrders() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(orders).orderBy(desc(orders.createdAt));
+}
+export async function updateOrderStatus(id: number, status: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  const existing = await db.select({ items: orders.items }).from(orders).where(eq(orders.id, id)).limit(1);
+  await db.update(orders).set({ status }).where(eq(orders.id, id));
+  let items: Array<{ id?: number }> = [];
+  try { items = existing[0]?.items ? JSON.parse(existing[0].items) : []; } catch { /* keep status update usable for malformed legacy rows */ }
+  const canvasStatus = status === "reserved" ? "reserved" : status === "sold" ? "sold" : status === "cancelled" ? "available" : null;
+  if (canvasStatus) {
+    await Promise.all(items.filter(item => item.id).map(item => db.update(canvases).set({ status: canvasStatus }).where(eq(canvases.id, item.id!))));
+  }
+  return id;
+}
+export async function deleteOrder(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.delete(orders).where(eq(orders.id, id));
+  return id;
+}

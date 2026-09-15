@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { Seo, studioJsonLd } from "@/components/Seo";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
+import { useLocation } from "wouter";
 
 const fallbackMedia = {
   pink: "/studio-assets/pink-orbit.jpg",
@@ -72,8 +73,10 @@ const fallbackJournal: JournalItem[] = [
   { slug: "what-happens-in-the-quiet", date: "27 AUG 2026", title: "What happens in the quiet", category: "From the studio", image: fallbackMedia.maker, copy: "A morning of cutting, winding, undoing, and starting again.", body: "A morning of cutting, winding, undoing, and starting again." },
 ];
 
+const CART_KEY = "threaded-forms-cart";
+
 const typeLabels: Record<string, string> = { studio_visit: "Studio visit", group_exhibition: "Group exhibition", workshop: "Workshop" };
-const statusLabels: Record<string, string> = { available: "Available", one_of_one: "One of one", coming_soon: "Coming soon", sold: "Sold" };
+const statusLabels: Record<string, string> = { available: "Available", one_of_one: "One of one", reserved: "Reserved", coming_soon: "Coming soon", sold: "Sold" };
 
 function asDate(value: Date | string) {
   return value instanceof Date ? value : new Date(value);
@@ -146,12 +149,31 @@ function downloadAppleCalendar(event: EventItem) {
 
 export default function Home() {
   const { data: content } = trpc.content.all.useQuery();
+  const [, setLocation] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [eventFilter, setEventFilter] = useState("All events");
   const [savedEvents, setSavedEvents] = useState<string[]>([]);
   const [email, setEmail] = useState("");
+
+  function addToCart(product: Product) {
+    if (product.status === "Sold" || product.status === "Coming soon") {
+      toast.error("This piece is not currently available to order.");
+      return;
+    }
+    try {
+      const current = JSON.parse(localStorage.getItem(CART_KEY) || "[]") as Array<Product & { quantity: number }>;
+      const existingIndex = current.findIndex((item) => item.id === product.id && item.title === product.title);
+      const next = existingIndex >= 0 ? current.map((item, index) => index === existingIndex ? { ...item, quantity: Math.min(10, item.quantity + 1) } : item) : [...current, { ...product, quantity: 1 }];
+      localStorage.setItem(CART_KEY, JSON.stringify(next));
+      toast.success("Added to your order.", { description: "You can continue browsing or complete the WhatsApp checkout." });
+      setSelectedProduct(null);
+      setLocation("/checkout");
+    } catch {
+      toast.error("Could not add this piece to your order.");
+    }
+  }
 
   const imageMap = useMemo(() => new Map((content?.images ?? []).map((image: ImageRow) => [image.name, { ...image, imageUrl: resolveStudioImage(image.imageUrl) }])), [content?.images]);
   const media = (name: keyof typeof fallbackMedia) => imageMap.get(name)?.imageUrl ?? fallbackMedia[name];
@@ -172,7 +194,7 @@ export default function Home() {
       <header className="app-header">
         <a className="studio-logo" href="#home" onClick={() => scrollTo("home")}><span className="logo-mark"><CircleDot size={17} /></span><span><b>Threaded Forms</b><small>Tehila's studio</small></span></a>
         <nav className={`app-nav ${menuOpen ? "open" : ""}`}>{[["home", "Home"], ["story", "Story"], ["shop", "Shop"], ["events", "Events"], ["journal", "Journal"]].map(([id, label]) => <a key={id} href={`#${id}`} onClick={() => scrollTo(id)}>{label}</a>)}<a href="/commission">Commissions</a></nav>
-        <div className="header-right"><a className="header-instagram" href="https://www.instagram.com/t.ww2.k" target="_blank" rel="noreferrer"><Instagram size={17} /> <span>Follow along</span></a><button className="bag-button" onClick={() => { setShopOpen(true); scrollTo("shop"); }} aria-label="Open shop"><ShoppingBag size={18} /><span>Shop</span></button><button className="mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">{menuOpen ? <X size={20} /> : <Menu size={20} />}</button></div>
+        <div className="header-right"><a className="header-instagram" href="https://www.instagram.com/t.ww2.k" target="_blank" rel="noreferrer"><Instagram size={17} /> <span>Follow along</span></a><button className="bag-button" onClick={() => setLocation("/checkout")} aria-label="Open order checkout"><ShoppingBag size={18} /><span>Order</span></button><button className="mobile-menu" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">{menuOpen ? <X size={20} /> : <Menu size={20} />}</button></div>
       </header>
 
       <section className="app-hero" id="home">
@@ -194,7 +216,7 @@ export default function Home() {
 
       <footer className="app-footer"><a className="studio-logo" href="#home"><span className="logo-mark"><CircleDot size={17} /></span><span><b>Threaded Forms</b><small>Tehila's studio</small></span></a><span>Made with thread, patience, and a little joy.</span><div className="footer-actions"><a href="https://www.instagram.com/t.ww2.k" target="_blank" rel="noreferrer"><Instagram size={16} /> Instagram</a><a href="mailto:hello@threadedforms.studio">Email <ArrowUpRight size={14} /></a></div></footer>
 
-      {selectedProduct && <div className="detail-backdrop" onClick={() => setSelectedProduct(null)}><div className="product-detail" onClick={(event) => event.stopPropagation()}><button className="detail-close" onClick={() => setSelectedProduct(null)} aria-label="Close details"><X size={19} /></button><img src={selectedProduct.image} alt={selectedProduct.title} /><div className="detail-copy"><span className="detail-status">{selectedProduct.status}</span><h2>{selectedProduct.title}</h2><p>{selectedProduct.description}</p><div className="detail-facts"><span><small>Size</small>{selectedProduct.size}</span><span><small>Price</small>{selectedProduct.price}</span><span><small>Made by</small>Tehila</span></div><a className="primary-button" href={`mailto:hello@threadedforms.studio?subject=Question%20about%20${encodeURIComponent(selectedProduct.title)}`}>Ask about this piece <ArrowRight size={17} /></a></div></div></div>}
+      {selectedProduct && <div className="detail-backdrop" onClick={() => setSelectedProduct(null)}><div className="product-detail" onClick={(event) => event.stopPropagation()}><button className="detail-close" onClick={() => setSelectedProduct(null)} aria-label="Close details"><X size={19} /></button><img src={selectedProduct.image} alt={selectedProduct.title} /><div className="detail-copy"><span className="detail-status">{selectedProduct.status}</span><h2>{selectedProduct.title}</h2><p>{selectedProduct.description}</p><div className="detail-facts"><span><small>Size</small>{selectedProduct.size}</span><span><small>Price</small>{selectedProduct.price}</span><span><small>Delivery</small>Confirmed separately</span></div><button className="primary-button" onClick={() => addToCart(selectedProduct)} disabled={selectedProduct.status === "Sold" || selectedProduct.status === "Coming soon"}>{selectedProduct.status === "Available" || selectedProduct.status === "One of one" ? "Add to order" : "Not available"} <ArrowRight size={17} /></button></div></div></div>}
     </main>
   );
 }
