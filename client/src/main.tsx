@@ -7,7 +7,18 @@ import superjson from "superjson";
 import App from "./App";
 import "./index.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Public content is safe to reuse briefly. Admin mutations explicitly
+      // invalidate it, so visitors do not pay a fresh API round trip on every
+      // navigation while updates still propagate immediately after publishing.
+      staleTime: 30_000,
+      gcTime: 10 * 60_000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;

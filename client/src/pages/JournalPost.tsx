@@ -18,10 +18,10 @@ function formatDate(value: string) {
 export default function JournalPost() {
   const [, params] = useRoute("/journal/:slug");
   const slug = params?.slug ?? "";
-  const { data: post, isLoading, isFetching } = trpc.content.journalBySlug.useQuery({ slug }, { enabled: Boolean(slug) });
+  const { data: post, isLoading, isFetching, isStale } = trpc.content.journalBySlug.useQuery({ slug }, { enabled: Boolean(slug) });
   const entry = post ?? fallbackPosts[slug];
 
-  if (isLoading || isFetching) return <div className="journal-loading">Opening the studio journal…</div>;
+  if (isLoading || (isStale && isFetching)) return <div className="journal-loading">Opening the studio journal…</div>;
   if (!entry) return <div className="journal-missing"><a className="underlined-link" href="/#journal"><ArrowLeft size={15} /> Back to journal</a><h1>This note has gone quiet.</h1><p>The journal post may have been unpublished or moved.</p></div>;
 
   const image = resolveStudioImage(entry.image_url, post?.updated_at) ?? entry.image_url;
@@ -34,7 +34,7 @@ export default function JournalPost() {
     <Seo title={title} description={description} path={canonicalPath} image={image} type="article" jsonLd={articleSchema} />
     <WhatsAppFloat />
     <header className="app-header"><a className="studio-logo" href="/"><span className="logo-mark"><CircleDot size={17} /></span><span><b>Threaded Forms</b><small>Tehila's studio</small></span></a><div className="header-right"><a className="header-instagram" href="https://www.instagram.com/t.ww2.k" target="_blank" rel="noreferrer"><Instagram size={17} /> <span>Follow along</span></a></div></header>
-    <article className="journal-post"><a className="back-journal" href="/#journal"><ArrowLeft size={15} /> Back to journal</a><div className="journal-post-heading"><div className="journal-meta"><span>{entry.category}</span><span>{formatDate(entry.published_at)}</span></div><h1>{entry.title}</h1><p className="journal-post-excerpt">{entry.excerpt}</p><div className="journal-author">Written by {entry.author_name} · Threaded Forms Studio, Nairobi</div></div><img className="journal-post-image" src={image} alt={entry.alt_text} /><div className="journal-post-body">{entry.body.split(/\n\s*\n/).map((paragraph: string) => <p key={paragraph}>{paragraph}</p>)}</div><div className="journal-post-footer"><a className="underlined-link" href="/#journal"><ArrowLeft size={15} /> More from the journal</a><a className="underlined-link" href="https://www.instagram.com/t.ww2.k" target="_blank" rel="noreferrer">Continue on Instagram <ArrowUpRight size={15} /></a></div></article>
+    <article className="journal-post"><a className="back-journal" href="/#journal"><ArrowLeft size={15} /> Back to journal</a><div className="journal-post-heading"><div className="journal-meta"><span>{entry.category}</span><span>{formatDate(entry.published_at)}</span></div><h1>{entry.title}</h1><p className="journal-post-excerpt">{entry.excerpt}</p><div className="journal-author">Written by {entry.author_name} · Threaded Forms Studio, Nairobi</div></div><img className="journal-post-image" src={image} alt={entry.alt_text} fetchPriority="high" decoding="async" /><div className="journal-post-body">{entry.body.split(/\n\s*\n/).map((paragraph: string) => <p key={paragraph}>{paragraph}</p>)}</div><div className="journal-post-footer"><a className="underlined-link" href="/#journal"><ArrowLeft size={15} /> More from the journal</a><a className="underlined-link" href="https://www.instagram.com/t.ww2.k" target="_blank" rel="noreferrer">Continue on Instagram <ArrowUpRight size={15} /></a></div></article>
     <footer className="app-footer"><a className="studio-logo" href="/"><span className="logo-mark"><CircleDot size={17} /></span><span><b>Threaded Forms</b><small>Tehila's studio</small></span></a><span>Made with thread, patience, and a little joy.</span></footer>
   </main>;
 }

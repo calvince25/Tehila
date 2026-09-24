@@ -111,9 +111,9 @@ function AdminDashboardInner({ user }: { user: { role: "admin" | "user"; isDefau
   const createImage = trpc.cms.createImage.useMutation({ onSuccess: () => { toast.success("Portfolio image added."); content.refetch(); void utils.content.all.invalidate(); resetImage(); } });
   const updateImage = trpc.cms.updateImage.useMutation({ onSuccess: () => { toast.success("Portfolio image updated."); content.refetch(); void utils.content.all.invalidate(); resetImage(); } });
   const deleteImage = trpc.cms.deleteImage.useMutation({ onSuccess: () => { toast.success("Portfolio image removed."); content.refetch(); void utils.content.all.invalidate(); } });
-  const createJournal = trpc.cms.createJournal.useMutation({ onSuccess: () => { toast.success("Journal post published."); content.refetch(); void utils.content.all.invalidate(); resetJournal(); } });
-  const updateJournal = trpc.cms.updateJournal.useMutation({ onSuccess: () => { toast.success("Journal post updated."); content.refetch(); void utils.content.all.invalidate(); resetJournal(); } });
-  const deleteJournal = trpc.cms.deleteJournal.useMutation({ onSuccess: () => { toast.success("Journal post removed."); content.refetch(); void utils.content.all.invalidate(); } });
+  const createJournal = trpc.cms.createJournal.useMutation({ onSuccess: () => { toast.success("Journal post published."); content.refetch(); void utils.content.all.invalidate(); void utils.content.journalBySlug.invalidate(); resetJournal(); } });
+  const updateJournal = trpc.cms.updateJournal.useMutation({ onSuccess: () => { toast.success("Journal post updated."); content.refetch(); void utils.content.all.invalidate(); void utils.content.journalBySlug.invalidate(); resetJournal(); } });
+  const deleteJournal = trpc.cms.deleteJournal.useMutation({ onSuccess: () => { toast.success("Journal post removed."); content.refetch(); void utils.content.all.invalidate(); void utils.content.journalBySlug.invalidate(); } });
   const deleteEnquiry = trpc.cms.deleteEnquiry.useMutation({ onSuccess: () => { toast.success("Enquiry deleted."); content.refetch(); } });
   const approveUser = trpc.users.approve.useMutation({ onSuccess: () => { toast.success("User approval updated."); usersQuery.refetch(); } });
   const deleteUser = trpc.users.delete.useMutation({ onSuccess: () => { toast.success("User removed."); usersQuery.refetch(); } });

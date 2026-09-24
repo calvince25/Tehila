@@ -38,7 +38,9 @@ export function registerStorageProxy(app: Express) {
         return;
       }
 
-      res.set("Cache-Control", "no-store");
+      // Uploads receive an immutable hash-suffixed key, so this redirect and
+      // the object it resolves to can be cached safely without stale swaps.
+      res.set("Cache-Control", "public, max-age=31536000, immutable");
       res.redirect(307, url);
     } catch (err) {
       console.error("[StorageProxy] failed:", err);
