@@ -40,12 +40,11 @@ function resolveAdminImage(url: string | undefined) {
   return legacy[key] ?? url;
 }
 
-function getNairobiGreeting() {
+function getNairobiGreeting(name: string | null) {
   const hour = Number(new Intl.DateTimeFormat("en-KE", { timeZone: "Africa/Nairobi", hour: "numeric", hour12: false }).format(new Date()));
-  if (hour >= 5 && hour < 12) return "Good morning";
-  if (hour === 12) return "Good noon";
-  if (hour > 12 && hour < 18) return "Good afternoon";
-  return "Good evening";
+  const greeting = hour >= 5 && hour < 12 ? "Good morning" : hour >= 12 && hour < 18 ? "Good afternoon" : "Good evening";
+  const displayName = name?.trim() || "Tehila";
+  return `${greeting}, ${displayName}.`;
 }
 
 function slugify(value: string) {
@@ -82,7 +81,7 @@ function DashboardHeader({ title, description, onAdd }: { title: string; descrip
   return <div className="cms-page-header"><div><p className="cms-eyebrow">TEHILA'S STUDIO / CONTENT</p><h1>{title}</h1><p>{description}</p></div>{onAdd && <button className="cms-primary" onClick={onAdd}><Plus size={16} /> Add new</button>}</div>;
 }
 
-function AdminDashboardInner({ user }: { user: { role: "admin" | "user"; isDefaultAdmin: number } }) {
+function AdminDashboardInner({ user }: { user: { name: string | null; role: "admin" | "user"; isDefaultAdmin: number } }) {
   const [location, setLocation] = useLocation();
   const [canvasForm, setCanvasForm] = useState<CanvasForm>(emptyCanvas);
   const [eventForm, setEventForm] = useState<EventForm>(emptyEvent);
@@ -178,7 +177,7 @@ function AdminDashboardInner({ user }: { user: { role: "admin" | "user"; isDefau
 
   return <div className="cms-shell">
     {section === "overview" && <>
-      <DashboardHeader title={`${getNairobiGreeting()}, Tehila.`} description="Your private studio desk for keeping the shop, calendar, and portfolio current." />
+      <DashboardHeader title={getNairobiGreeting(user.name)} description="Your private studio desk for keeping the shop, calendar, and portfolio current." />
       <div className="cms-stat-grid"><button onClick={() => setSection("canvases")} className="cms-stat"><span>SHOP PIECES</span><strong>{counts.canvases}</strong><small>Manage canvases <ArrowUpRight size={14} /></small></button><button onClick={() => setSection("events")} className="cms-stat"><span>UPCOMING EVENTS</span><strong>{counts.events}</strong><small>Update the calendar <ArrowUpRight size={14} /></small></button><button onClick={() => setSection("journal")} className="cms-stat"><span>JOURNAL POSTS</span><strong>{counts.journal}</strong><small>Write a studio note <ArrowUpRight size={14} /></small></button><button onClick={() => setSection("images")} className="cms-stat"><span>PORTFOLIO IMAGES</span><strong>{counts.images}</strong><small>Replace any image <ArrowUpRight size={14} /></small></button></div>
       <div className="cms-overview-grid"><section className="cms-panel cms-welcome"><p className="cms-eyebrow">A SMALL NOTE</p><h2>The quiet work is the work.</h2><p>Add a canvas when a new piece is ready, publish events as dates become firm, write a journal note when there is something to say, and replace portfolio images whenever the studio changes.</p><button className="cms-primary" onClick={() => setSection("journal")}><FileText size={16} /> Write a journal note</button></section><section className="cms-panel"><div className="cms-panel-heading"><div><p className="cms-eyebrow">QUICK LINKS</p><h2>Keep things moving</h2></div></div><button className="cms-quick-link" onClick={() => setSection("events")}><CalendarDays size={18} /><span><b>Plan the next gathering</b><small>Visitors can save dates to Google or Apple Calendar.</small></span><ArrowUpRight size={16} /></button><button className="cms-quick-link" onClick={() => setSection("journal")}><FileText size={18} /><span><b>Write from the studio</b><small>New journal posts are stored in Supabase and get their own URL.</small></span><ArrowUpRight size={16} /></button><button className="cms-quick-link" onClick={() => setSection("images")}><ImagePlus size={18} /><span><b>Refresh the visual story</b><small>Swap any image without touching the code.</small></span><ArrowUpRight size={16} /></button></section></div>
     </>}
