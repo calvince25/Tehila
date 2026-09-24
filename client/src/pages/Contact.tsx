@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Seo, SITE_URL } from "@/components/Seo";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import { trpc } from "@/lib/trpc";
+import { resolveStudioImage } from "@/lib/studio-images";
 
 const whatsappNumber = "254113448688";
 
@@ -20,13 +21,12 @@ export default function Contact() {
   const [sent, setSent] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", projectType: "A custom wall piece", room: "", size: "", budget: "", timeline: "", message: "" });
   const submitEnquiry = trpc.content.submitCommission.useMutation();
-  const content = trpc.content.all.useQuery();
+  const { data, isLoading, isFetching } = trpc.content.all.useQuery();
   const contactImage = useMemo(() => {
-    const image = content.data?.images?.find((item) => item.name === "pink");
+    const image = data?.images?.find((item) => item.name === "pink");
     if (!image?.imageUrl) return "/studio-assets/pink-orbit.jpg";
-    const version = image.updatedAt ? `?v=${encodeURIComponent(new Date(image.updatedAt).getTime())}` : "";
-    return `${image.imageUrl}${version}`;
-  }, [content.data?.images]);
+    return resolveStudioImage(image.imageUrl, image.updatedAt) ?? "/studio-assets/pink-orbit.jpg";
+  }, [data?.images]);
   const update = (key: keyof typeof form, value: string) => setForm(current => ({ ...current, [key]: value }));
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -38,6 +38,8 @@ export default function Contact() {
       toast.error(error instanceof Error ? error.message : "Could not save your enquiry. Please try WhatsApp directly.");
     }
   };
+
+  if (isLoading || isFetching) return <main className="journal-loading">Loading the studio…</main>;
 
   const serviceSchema = { "@context": "https://schema.org", "@type": "Service", name: "Custom string-art and fiber-art artwork", provider: { "@type": "Person", name: "Tehila", url: SITE_URL }, areaServed: [{ "@type": "City", name: "Nairobi" }, { "@type": "Country", name: "Kenya" }], description: "Personalized string-art and contemporary fiber-art wall pieces made by Tehila in Nairobi." };
 
