@@ -130,12 +130,23 @@ export const cmsRouter = router({
   deleteSubscriber: adminProcedure.input(z.object({ id: z.number().int() })).mutation(({ input }) => deleteNewsletterSubscriber(input.id)),
 
   uploadImage: adminProcedure.input(uploadInput).mutation(async ({ input, ctx }) => {
-    if (input.data.length > 8_000_000) {
-      throw new TRPCError({ code: "BAD_REQUEST", message: "Please upload an image smaller than 6 MB." });
-    }
     const safeName = input.fileName.toLowerCase().replace(/[^a-z0-9._-]+/g, "-");
     const buffer = Buffer.from(input.data, "base64");
-    return storagePut(`threaded-forms/${ctx.user.id}/${Date.now()}-${safeName}`, buffer, input.contentType);
+    if (!buffer.length || buffer.length > 6_000_000) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: "The prepared image is still too large. Please choose a smaller image." });
+    }
+
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        return await storagePut(`threaded-forms/${ctx.user.id}/${Date.now()}-${safeName}`, buffer, input.contentType);
+      } catch (error) {
+        lastError = error;
+        if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 500 * 2 ** attempt));
+      }
+    }
+    const message = lastError instanceof Error ? lastError.message : "The storage service did not accept the upload.";
+    throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Upload failed after several attempts: ${message}` });
   }),
 
   createCanvas: adminProcedure.input(z.object(canvasFields)).mutation(({ input }) => createCanvas(input)),

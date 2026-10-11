@@ -58,8 +58,54 @@ function orderWhatsAppUrl(order: OrderRow) {
   return `https://wa.me/${order.phone.replace(/\D/g, "")}?text=${encodeURIComponent(message.join("\n"))}`;
 }
 
-async function encodeFile(file: File) {
-  const bytes = new Uint8Array(await file.arrayBuffer());
+const MAX_UPLOAD_BYTES = 4_500_000;
+const MAX_IMAGE_DIMENSION = 2400;
+
+function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality?: number) {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("The image could not be prepared for upload.")), type, quality);
+  });
+}
+
+async function prepareImage(file: File) {
+  if (!file.type.startsWith("image/")) throw new Error("Please choose an image file.");
+
+  const image = new Image();
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    image.src = objectUrl;
+    await new Promise<void>((resolve, reject) => {
+      image.onload = () => resolve();
+      image.onerror = () => reject(new Error("This image could not be read. Please choose another file."));
+    });
+
+    const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    canvas.getContext("2d")?.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    let quality = 0.84;
+    let blob = await canvasToBlob(canvas, "image/jpeg", quality);
+    while (blob.size > MAX_UPLOAD_BYTES && quality > 0.45) {
+      quality -= 0.08;
+      blob = await canvasToBlob(canvas, "image/jpeg", quality);
+    }
+    while (blob.size > MAX_UPLOAD_BYTES && canvas.width > 900) {
+      canvas.width = Math.round(canvas.width * 0.85);
+      canvas.height = Math.round(canvas.height * 0.85);
+      canvas.getContext("2d")?.drawImage(image, 0, 0, canvas.width, canvas.height);
+      blob = await canvasToBlob(canvas, "image/jpeg", 0.7);
+    }
+    if (blob.size > MAX_UPLOAD_BYTES) throw new Error("This image is too detailed to upload. Please choose a smaller image.");
+    return { blob, fileName: file.name.replace(/\.[^.]+$/, "") + ".jpg", contentType: "image/jpeg" };
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+async function encodeBlob(blob: Blob) {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
   let binary = "";
   const chunkSize = 0x8000;
   for (let index = 0; index < bytes.length; index += chunkSize) {
@@ -136,7 +182,20 @@ function AdminDashboardInner({ user }: { user: { name: string | null; role: "adm
   function editImage(item: ImageRow) { setImageForm({ name: item.name, label: item.label, altText: item.altText, imageUrl: item.imageUrl, imageKey: item.imageKey ?? "", sortOrder: item.sortOrder }); setEditingImage(item.id); setSection("images"); }
   function editJournal(item: JournalRow) { setJournalForm({ slug: item.slug, title: item.title, excerpt: item.excerpt, body: item.body, category: item.category, imageUrl: item.image_url, imageKey: item.image_key ?? "", altText: item.alt_text, publishedAt: toLocalInput(item.published_at), isPublished: item.is_published, seoTitle: item.seo_title ?? "", seoDescription: item.seo_description ?? "", authorName: item.author_name }); setEditingJournal(item.id); setSection("journal"); }
   function setSection(next: string) { setLocation(next === "overview" ? "/admin" : `/admin/${next}`); }
-  async function maybeUpload(file: File | null) { if (!file) return null; return upload.mutateAsync({ fileName: file.name, contentType: file.type, data: await encodeFile(file) }); }
+  async function maybeUpload(file: File | null) {
+    if (!file) return null;
+    const prepared = await prepareImage(file);
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        return await upload.mutateAsync({ fileName: prepared.fileName, contentType: prepared.contentType, data: await encodeBlob(prepared.blob) });
+      } catch (error) {
+        lastError = error;
+        if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 500 * 2 ** attempt));
+      }
+    }
+    throw lastError instanceof Error ? lastError : new Error("The upload failed after several attempts. Please try again.");
+  }
 
   async function saveCanvas() {
     try {
