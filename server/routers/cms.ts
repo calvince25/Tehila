@@ -42,7 +42,7 @@ const canvasFields = {
   price: z.string().min(1).max(40),
   size: z.string().min(1).max(80),
   status: statusSchema,
-  description: z.string().min(1),
+  description: z.string(),
   imageUrl: z.string().min(1),
   imageKey: z.string().max(512).optional().nullable(),
   sortOrder: z.number().int().default(0),

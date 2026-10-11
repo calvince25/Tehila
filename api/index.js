@@ -950,7 +950,7 @@ var canvasFields = {
   price: z2.string().min(1).max(40),
   size: z2.string().min(1).max(80),
   status: statusSchema,
-  description: z2.string().min(1),
+  description: z2.string(),
   imageUrl: z2.string().min(1),
   imageKey: z2.string().max(512).optional().nullable(),
   sortOrder: z2.number().int().default(0)
